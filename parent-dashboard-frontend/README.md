@@ -35,6 +35,20 @@ The JWT from `/auth/login` or `/auth/signup` is kept in `localStorage`
 401, clears it and redirects to `/login`. Auth state lives in
 `src/auth/AuthProvider.jsx` and is read with the `useAuth()` hook.
 
+## Design system
+
+The palette and fonts are Tailwind v4 `@theme` tokens at the top of
+`src/index.css` — change those ~12 values to retune the whole app. Token
+utilities: `bg-canvas` / `bg-surface` / `bg-surface-sunk`, `text-ink` /
+`text-ink-soft` / `text-ink-faint`, `sage` / `sage-dark` / `sage-soft`
+(accent), `clay` / `clay-soft` (sparingly), `border-line` /
+`border-line-strong`.
+
+Shared UI primitives live in `src/components/ui.jsx` (`Card`, `Button`,
+`TextInput`, `Select`, `Textarea`, `Field`, `Alert`, `EmptyState`).
+Every app page is framed with `PageHeader`; auth pages with `AuthShell`.
+Layout is `Sidebar` + a centered `max-w-4xl` column in `AppLayout`.
+
 ## Where things are
 
 | Path | What |
@@ -42,7 +56,9 @@ The JWT from `/auth/login` or `/auth/signup` is kept in `localStorage`
 | `src/api/client.js` | axios instance + interceptors + `errorMessage()` |
 | `src/api/resources.js` | typed calls for children / logs / documents / tips |
 | `src/auth/` | token storage, context, provider |
+| `src/components/ui.jsx` | shared visual primitives |
+| `src/components/Sidebar,AppLayout,PageHeader,AuthShell` | layout + framing |
 | `src/pages/Login,Signup` | real auth forms |
 | `src/pages/Dashboard` | list + add children (live) |
-| `src/pages/Logs` | pick a child, view + add logs (live) |
-| `src/pages/Documents,AISummary` | still placeholders |
+| `src/pages/Logs` | pick a child, view + add logs (live) — timeline |
+| `src/pages/Documents,AISummary` | framed "coming soon" screens |
