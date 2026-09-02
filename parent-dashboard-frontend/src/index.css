@@ -1,150 +1,53 @@
-/* =========================================
-   Tailwind Base
-========================================= */
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
-/* =========================================
-   Root Styles
-========================================= */
-:root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+/* =========================================================
+   Design tokens — retune the whole app from here.
+   Calm & warm: warm off-white ground, soft slate-green ink,
+   muted sage accent, warm clay used sparingly.
+   ========================================================= */
+@theme {
+  --color-canvas: #faf9f6;
+  --color-surface: #ffffff;
+  --color-surface-sunk: #f3f1ec;
+
+  --color-ink: #333f3a;
+  --color-ink-soft: #63706a;
+  --color-ink-faint: #97a09b;
+
+  --color-sage: #5b8a78;
+  --color-sage-dark: #446f5f;
+  --color-sage-soft: #ebf1ee;
+
+  --color-clay: #c07350;
+  --color-clay-soft: #f6ebe4;
+
+  --color-line: #e9e5dd;
+  --color-line-strong: #dcd6ca;
+
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+}
+
+/* =========================================================
+   Base
+   ========================================================= */
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  background-color: var(--color-canvas);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
   line-height: 1.5;
-  font-weight: 400;
-  color-scheme: light dark;
-  color: rgba(0, 0, 0, 0.87);
-  background-color: #f0f4f8; /* light background for app */
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* =========================================
-   Body & Root
-   - Ensures full height
-   - Centers horizontally if needed
-========================================= */
-html, body, #root {
-  height: 100%;
-  width: 100%;
-  margin: 0;
-  padding: 0;
+*:focus-visible {
+  outline: 2px solid var(--color-sage);
+  outline-offset: 2px;
 }
-
-/* Optional: Use flex if you want vertical centering globally */
-body {
-  display: flex;
-  flex-direction: column;
-  align-items: center; /* center children horizontally */
-  background-color: #f0f4f8;
-  min-height: 100vh;
-}
-
-/* =========================================
-   Headings
-========================================= */
-h1, h2, h3, h4, h5, h6 {
-  font-weight: 700;
-  color: #1f2937; /* dark gray for text */
-  line-height: 1.2;
-}
-
-h1 {
-  font-size: 3em;
-}
-
-h2 {
-  font-size: 2em;
-}
-
-/* =========================================
-   Links
-========================================= */
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: none;
-  transition: color 0.2s;
-}
-
-a:hover {
-  color: #535bf2;
-}
-
-/* =========================================
-   Buttons
-========================================= */
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  color: #fff;
-  cursor: pointer;
-  transition: all 0.25s;
-}
-
-button:hover {
-  border-color: #646cff;
-  background-color: #2a2a2a;
-}
-
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
-}
-
-/* =========================================
-   Inputs
-========================================= */
-input, select, textarea {
-  font-family: inherit;
-  font-size: 1em;
-  padding: 0.5em 0.75em;
-  border: 1px solid #d1d5db; /* gray-300 */
-  border-radius: 0.5rem;
-  transition: border-color 0.2s, box-shadow 0.2s;
-}
-
-input:focus, select:focus, textarea:focus {
-  outline: none;
-  border-color: #6366f1; /* indigo-500 */
-  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.3);
-}
-
-/* =========================================
-   Media Queries: Light/Dark
-========================================= */
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
-    color: #1a1a1a;
-  }
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    color: #f9fafb;
-    background-color: #1f2937;
-  }
-  a:hover {
-    color: #818cf8;
-  }
-  button {
-    background-color: #374151;
-    color: #f9fafb;
-  }
-}
-
