@@ -3,20 +3,14 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app import auth
 from app.config import CORS_ORIGINS, assert_production_config
-from app.database import Base, engine
 from app.routes import children, documents, exploration_tips, logs
 
-# Refuse to start with the dev secret when ENV says this is not dev.
+# Refuse to start on an unsafe production configuration (dev secret / no DB).
 assert_production_config()
 
-# -----------------------------
-# Create database tables
-# -----------------------------
-Base.metadata.create_all(bind=engine)
+# Schema is managed by Alembic — run `alembic upgrade head` (locally and as
+# the Render pre-deploy command). No create_all here.
 
-# -----------------------------
-# App
-# -----------------------------
 app = FastAPI(title="Parent Dashboard MVP")
 
 app.add_middleware(

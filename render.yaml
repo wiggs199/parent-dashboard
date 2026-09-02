@@ -1,0 +1,31 @@
+# Render Blueprint for the backend API.
+# In Render: New > Blueprint, point at this repo. It creates the web service
+# below; you then fill in the env vars marked `sync: false`.
+#
+# The database is Neon (external), not a Render database — paste its
+# connection string into DATABASE_URL.
+
+services:
+  - type: web
+    name: parent-dashboard-api
+    runtime: python
+    plan: free
+    rootDir: parent-dashboard-backend
+    buildCommand: pip install -r requirements.txt
+    # Runs migrations, then starts the server. Fine for a single instance.
+    # On a paid plan, move `alembic upgrade head` to a preDeployCommand.
+    startCommand: alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: ENV
+        value: production
+      - key: PYTHON_VERSION
+        value: "3.12.8"
+      - key: SECRET_KEY
+        generateValue: true          # Render generates a strong value once
+      - key: DATABASE_URL
+        sync: false                   # paste the Neon connection string
+      - key: CORS_ORIGINS
+        sync: false                   # e.g. https://parent-dashboard.pages.dev
+      - key: ACCESS_TOKEN_EXPIRE_MINUTES
+        value: "1440"

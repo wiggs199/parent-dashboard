@@ -1,7 +1,7 @@
 # Parent Dashboard — Backend
 
-FastAPI + SQLAlchemy + SQLite. JWT auth; every resource is scoped to the
-logged-in parent.
+FastAPI + SQLAlchemy. JWT auth; every resource is scoped to the logged-in
+parent. SQLite locally, Postgres in production (`DATABASE_URL`).
 
 ## Setup
 
@@ -11,11 +11,12 @@ python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements-dev.txt   # or requirements.txt for runtime only
 cp .env.example .env                  # optional for local dev; see below
+alembic upgrade head                  # create the tables
 ```
 
-`.env` is optional locally — the app falls back to an insecure dev secret.
-It is **required** in any non-dev environment (`ENV != development`), where
-startup aborts if `SECRET_KEY` is still the default.
+`.env` is optional locally — the app falls back to an insecure dev secret
+and a local SQLite file. It is **required** once `ENV != development`, where
+startup aborts unless both `SECRET_KEY` and `DATABASE_URL` are set.
 
 ## Run
 
@@ -26,9 +27,20 @@ uvicorn app.main:app --reload --port 8000
 - API docs: http://localhost:8000/docs
 - Health check: http://localhost:8000/health
 
-The SQLite file `db.sqlite3` is created on first run and is gitignored.
-There are no migrations yet: if you change a model, delete `db.sqlite3` and
-let it recreate.
+## Database & migrations
+
+Schema is managed by **Alembic** — there is no `create_all`. `db.sqlite3`
+(gitignored) is created by `alembic upgrade head`. When you change a model:
+
+```bash
+alembic revision --autogenerate -m "what changed"
+# review alembic/versions/<new file>, then
+alembic upgrade head
+```
+
+Commit the new file under `alembic/versions/`. `tests/test_migrations.py`
+fails if a model change has no matching migration. In production Render runs
+`alembic upgrade head` on every deploy.
 
 ## Test
 
@@ -38,6 +50,10 @@ pytest
 
 Tests use a throwaway SQLite file per test and never touch `db.sqlite3` or
 `uploads/`.
+
+## Deploy
+
+See [`../DEPLOY.md`](../DEPLOY.md) — Neon + Render + Cloudflare Pages.
 
 ## API shape
 

@@ -12,8 +12,8 @@ or progress evaluation.
 
 | Folder | Stack | Notes |
 |---|---|---|
-| `parent-dashboard-backend/` | FastAPI + SQLAlchemy + SQLite | JWT auth, per-parent scoping. See its README. |
-| `parent-dashboard-frontend/` | React 19 + Vite + Tailwind | Currently runs on placeholder data; being wired to the API next. |
+| `parent-dashboard-backend/` | FastAPI + SQLAlchemy + Alembic | JWT auth, per-parent scoping. SQLite locally, Postgres in prod. See its README. |
+| `parent-dashboard-frontend/` | React 19 + Vite + Tailwind v4 | Talks to the API; real auth. See its README. |
 
 ## Running locally
 
@@ -24,6 +24,7 @@ Two terminals:
 cd parent-dashboard-backend
 python3 -m venv venv && source venv/bin/activate
 pip install -r requirements-dev.txt
+alembic upgrade head
 uvicorn app.main:app --reload --port 8000
 
 # 2 — frontend
@@ -32,11 +33,18 @@ npm install
 npm run dev        # http://localhost:5173
 ```
 
+## Deploy
+
+[`DEPLOY.md`](DEPLOY.md) — Neon (Postgres) + Render (API) + Cloudflare Pages
+(frontend). $0 to launch.
+
 ## Status
 
-- [x] Backend foundation fixed (routers actually mount, CORS, deps pinned)
+- [x] Backend foundation (routers mount, CORS, deps pinned)
 - [x] Parent model + JWT auth + per-parent scoping, with tests
-- [ ] Frontend wired to the API (real auth, real data)
+- [x] Frontend wired to the API (real auth, real data)
+- [x] Calm/warm design system + sidebar layout
+- [x] Postgres + Alembic migrations; deploy config; Privacy / Terms pages
 - [ ] Document upload / timeline / CSV-PDF export UI
 - [ ] AI summaries (read-only, observational)
-- [ ] Move SQLite → Postgres before real users
+- [ ] Password reset, rate limiting, error monitoring (before wide launch)

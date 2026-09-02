@@ -9,7 +9,7 @@ load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 
 # HS256 signing key for JWTs. MUST be set via the environment in production.
 # The insecure fallback keeps local dev frictionless but is refused if the
-# app thinks it is running for real (see main.py's startup check).
+# app thinks it is running for real (see assert_production_config).
 DEV_SECRET = "dev-only-insecure-secret-change-me"
 SECRET_KEY = os.getenv("SECRET_KEY", DEV_SECRET)
 
@@ -28,7 +28,28 @@ CORS_ORIGINS = [
 ENV = os.getenv("ENV", "development")
 
 
+def _normalize_db_url(raw: str) -> str:
+    """Accept the URL shapes hosts hand out and target the psycopg v3 driver.
+
+    Neon/Render give `postgresql://…` (sometimes the legacy `postgres://`);
+    SQLAlchemy needs an explicit driver, so map both to `postgresql+psycopg://`.
+    """
+    if raw.startswith("postgres://"):
+        raw = "postgresql://" + raw[len("postgres://"):]
+    if raw.startswith("postgresql://"):
+        raw = "postgresql+psycopg://" + raw[len("postgresql://"):]
+    return raw
+
+
+# No DATABASE_URL -> local SQLite file. Set it in production to a Postgres URL.
+DATABASE_URL = _normalize_db_url(os.getenv("DATABASE_URL", "sqlite:///./db.sqlite3"))
+
+
 def assert_production_config() -> None:
-    """Fail fast if we are running outside dev with the throwaway secret."""
-    if ENV != "development" and SECRET_KEY == DEV_SECRET:
+    """Fail fast on an unsafe production configuration."""
+    if ENV == "development":
+        return
+    if SECRET_KEY == DEV_SECRET:
         sys.exit("ENV is not 'development' but SECRET_KEY is still the dev default. Set a real SECRET_KEY.")
+    if DATABASE_URL.startswith("sqlite"):
+        sys.exit("ENV is not 'development' but DATABASE_URL is unset. Point it at Postgres.")

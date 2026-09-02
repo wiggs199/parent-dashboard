@@ -1,4 +1,5 @@
 import { Sparkles } from "lucide-react";
+import { Link } from "react-router-dom";
 
 export default function AuthShell({ title, subtitle, children, footer }) {
   return (
@@ -19,6 +20,12 @@ export default function AuthShell({ title, subtitle, children, footer }) {
         {footer && (
           <p className="mt-4 text-center text-sm text-ink-soft">{footer}</p>
         )}
+
+        <p className="mt-6 text-center text-xs text-ink-faint">
+          <Link to="/privacy" className="hover:underline">Privacy</Link>
+          {" · "}
+          <Link to="/terms" className="hover:underline">Terms</Link>
+        </p>
       </div>
     </div>
   );

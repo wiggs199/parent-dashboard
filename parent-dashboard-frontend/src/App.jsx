@@ -10,6 +10,8 @@ import Documents from "./pages/Documents";
 import AISummary from "./pages/AISummary";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
+import Privacy from "./pages/Privacy";
+import Terms from "./pages/Terms";
 
 function Protected({ children }) {
   return (
@@ -26,6 +28,8 @@ export default function App() {
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
+          <Route path="/privacy" element={<Privacy />} />
+          <Route path="/terms" element={<Terms />} />
 
           <Route path="/" element={<Protected><Dashboard /></Protected>} />
           <Route path="/logs" element={<Protected><Logs /></Protected>} />
