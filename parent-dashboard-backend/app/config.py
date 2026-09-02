@@ -27,6 +27,17 @@ CORS_ORIGINS = [
 
 ENV = os.getenv("ENV", "development")
 
+# Where the frontend lives — used to build links in outgoing emails.
+FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173").rstrip("/")
+
+# Transactional email (Resend). Unset -> emails are logged, not sent, which
+# keeps local dev and tests offline.
+RESEND_API_KEY = os.getenv("RESEND_API_KEY", "")
+EMAIL_FROM = os.getenv("EMAIL_FROM", "NovaPath <onboarding@resend.dev>")
+
+VERIFY_TOKEN_EXPIRE_HOURS = int(os.getenv("VERIFY_TOKEN_EXPIRE_HOURS", "168"))  # 7 days
+RESET_TOKEN_EXPIRE_MINUTES = int(os.getenv("RESET_TOKEN_EXPIRE_MINUTES", "60"))
+
 
 def _normalize_db_url(raw: str) -> str:
     """Accept the URL shapes hosts hand out and target the psycopg v3 driver.

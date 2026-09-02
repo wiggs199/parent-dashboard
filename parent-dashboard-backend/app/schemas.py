@@ -19,6 +19,7 @@ class ParentRead(BaseModel):
     id: int
     email: EmailStr
     name: Optional[str] = None
+    email_verified: bool = False
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -26,6 +27,23 @@ class ParentRead(BaseModel):
 class Token(BaseModel):
     access_token: str
     token_type: str = "bearer"
+
+
+class MessageResponse(BaseModel):
+    message: str
+
+
+class TokenInput(BaseModel):
+    token: str
+
+
+class ForgotPasswordInput(BaseModel):
+    email: EmailStr
+
+
+class ResetPasswordInput(BaseModel):
+    token: str
+    new_password: str = Field(min_length=8, max_length=72)
 
 
 # -----------------------------

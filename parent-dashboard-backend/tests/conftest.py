@@ -40,6 +40,27 @@ def client(tmp_path):
 
 
 @pytest.fixture()
+def mailbox(monkeypatch):
+    """Capture outgoing mail instead of sending it. Each entry: (kind, to, token)."""
+    from app import mailer
+
+    sent = []
+    monkeypatch.setattr(
+        mailer, "send_welcome_and_verify",
+        lambda to, name, token: sent.append(("welcome", to, token)),
+    )
+    monkeypatch.setattr(
+        mailer, "send_verify",
+        lambda to, token: sent.append(("verify", to, token)),
+    )
+    monkeypatch.setattr(
+        mailer, "send_password_reset",
+        lambda to, token: sent.append(("reset", to, token)),
+    )
+    return sent
+
+
+@pytest.fixture()
 def auth_headers(client):
     """Return a helper that signs up a parent and yields Authorization headers."""
 
