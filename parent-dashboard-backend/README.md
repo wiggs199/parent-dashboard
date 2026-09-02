@@ -53,7 +53,20 @@ Tests use a throwaway SQLite file per test and never touch `db.sqlite3` or
 
 ## Deploy
 
-See [`../DEPLOY.md`](../DEPLOY.md) — Neon + Render + Cloudflare Pages.
+See [`../DEPLOY.md`](../DEPLOY.md) — Neon + Render + Cloudflare.
+
+## Admin scripts
+
+Point `DATABASE_URL` at the Neon string (from Render → Environment) and run:
+
+```bash
+DATABASE_URL='postgresql://...' venv/bin/python scripts/stats.py
+DATABASE_URL='postgresql://...' venv/bin/python scripts/reset_password.py user@example.com
+```
+
+- `stats.py` — usage counts, recent signups, recent logs
+- `reset_password.py` — unlock a trial user who forgot their password
+  (prints a temp password to send them; there is no self-serve reset yet)
 
 ## API shape
 

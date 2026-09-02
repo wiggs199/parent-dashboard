@@ -6,6 +6,7 @@ import {
   FolderClosed,
   Sparkles,
   LogOut,
+  MessageSquare,
   Menu,
   X,
 } from "lucide-react";
@@ -64,6 +65,9 @@ function AccountFooter() {
   const { parent, logout } = useAuth();
   const navigate = useNavigate();
 
+  const footerItem =
+    "flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-ink-soft transition-colors hover:bg-surface-sunk hover:text-ink";
+
   return (
     <div className="border-t border-line px-3 pt-3">
       {parent?.email && (
@@ -71,12 +75,19 @@ function AccountFooter() {
           {parent.email}
         </p>
       )}
+      <a
+        href={`mailto:${SITE.contactEmail}?subject=${encodeURIComponent(`${SITE.name} feedback`)}`}
+        className={footerItem}
+      >
+        <MessageSquare size={18} strokeWidth={1.75} />
+        Send feedback
+      </a>
       <button
         onClick={() => {
           logout();
           navigate("/login");
         }}
-        className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-ink-soft transition-colors hover:bg-surface-sunk hover:text-ink"
+        className={footerItem}
       >
         <LogOut size={18} strokeWidth={1.75} />
         Log out
