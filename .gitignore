@@ -15,6 +15,7 @@ node_modules/
 dist/
 dist-ssr/
 *.local
+.wrangler/
 
 # Uploads (keep the folder, ignore contents)
 parent-dashboard-backend/uploads/*

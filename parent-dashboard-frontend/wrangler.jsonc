@@ -1,0 +1,11 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "parent-dashboard",
+  "compatibility_date": "2026-01-01",
+  // Serve the built Vite output as static assets, with SPA fallback so
+  // client-side routes like /login and /privacy resolve to index.html.
+  "assets": {
+    "directory": "./dist",
+    "not_found_handling": "single-page-application"
+  }
+}
