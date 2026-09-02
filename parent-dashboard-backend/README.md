@@ -57,16 +57,24 @@ See [`../DEPLOY.md`](../DEPLOY.md) — Neon + Render + Cloudflare.
 
 ## Admin scripts
 
-Point `DATABASE_URL` at the Neon string (from Render → Environment) and run:
+One-time: create `.env.prod` (gitignored) with the live DB URL from
+Render → the API service → Environment:
 
-```bash
-DATABASE_URL='postgresql://...' venv/bin/python scripts/stats.py
-DATABASE_URL='postgresql://...' venv/bin/python scripts/reset_password.py user@example.com
+```
+DATABASE_URL=postgresql://…neon.tech/neondb?sslmode=require
 ```
 
-- `stats.py` — usage counts, recent signups, recent logs
-- `reset_password.py` — unlock a trial user who forgot their password
-  (prints a temp password to send them; there is no self-serve reset yet)
+Then:
+
+```bash
+cd parent-dashboard-backend
+venv/bin/python scripts/stats.py                       # usage counts, recent signups + logs
+venv/bin/python scripts/reset_password.py user@x.com   # unlock a locked-out trial user
+```
+
+`.env.prod` is read only by these scripts — local `uvicorn` still uses SQLite.
+`reset_password.py` prints a temp password to send the user; there is no
+self-serve reset yet.
 
 ## API shape
 

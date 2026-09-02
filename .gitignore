@@ -8,6 +8,7 @@ __pycache__/
 # non-secret API URL and is committed so the app runs out of the box.
 .env
 .env.local
+.env.prod
 !parent-dashboard-frontend/.env
 
 # Node / frontend

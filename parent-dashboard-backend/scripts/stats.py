@@ -1,20 +1,29 @@
 """Print usage counts from the database.
 
-Run against production (Neon):
+One-time setup: create parent-dashboard-backend/.env.prod (gitignored) with
+
+    DATABASE_URL=postgresql://...neon.tech/neondb?sslmode=require
+
+(the value from Render -> the API service -> Environment). Then just:
 
     cd parent-dashboard-backend
-    DATABASE_URL='postgresql://...neon.tech/neondb?sslmode=require' \
-        venv/bin/python scripts/stats.py
-
-Get the DATABASE_URL from Render → the API service → Environment.
+    venv/bin/python scripts/stats.py
 """
 import os
 import sys
+from pathlib import Path
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+from dotenv import load_dotenv  # noqa: E402
+
+load_dotenv(Path(__file__).resolve().parent.parent / ".env.prod")
+
 if not os.getenv("DATABASE_URL"):
-    sys.exit("Set DATABASE_URL to the Neon connection string first (see this file's docstring).")
+    sys.exit(
+        "No DATABASE_URL. Create parent-dashboard-backend/.env.prod with the "
+        "Neon connection string (see this file's docstring)."
+    )
 
 from sqlalchemy import create_engine, text  # noqa: E402
 
