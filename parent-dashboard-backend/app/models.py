@@ -1,7 +1,11 @@
 from sqlalchemy import Column, Integer, String, Text, ForeignKey, DateTime, Date
 from sqlalchemy.orm import relationship
-from datetime import datetime
+from datetime import datetime, timezone
 from app.database import Base
+
+
+def _utcnow():
+    return datetime.now(timezone.utc)
 
 class Child(Base):
     __tablename__ = "children"
@@ -44,7 +48,7 @@ class ExplorationTip(Base):
     child_id = Column(Integer, ForeignKey("children.id"), nullable=False)
     logentry_id = Column(Integer, ForeignKey("logentries.id"), nullable=True)
     tip_text = Column(Text, nullable=False)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=_utcnow)
 
     child = relationship("Child", back_populates="exploration_tips")
     logentry = relationship("LogEntry", back_populates="exploration_tips")

@@ -7,8 +7,9 @@ from app.database import get_db
 
 router = APIRouter()
 
+
 # Create a new child
-@router.post("/", response_model=schemas.ChildRead)
+@router.post("", response_model=schemas.ChildRead)
 def create_child(child: schemas.ChildCreate, db: Session = Depends(get_db)):
     db_child = models.Child(name=child.name)
     db.add(db_child)
@@ -16,10 +17,12 @@ def create_child(child: schemas.ChildCreate, db: Session = Depends(get_db)):
     db.refresh(db_child)
     return db_child
 
+
 # Get all children
-@router.get("/", response_model=List[schemas.ChildRead])
+@router.get("", response_model=List[schemas.ChildRead])
 def get_children(db: Session = Depends(get_db)):
     return db.query(models.Child).all()
+
 
 # Get a specific child
 @router.get("/{child_id}", response_model=schemas.ChildRead)

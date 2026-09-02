@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from datetime import date, datetime
 from typing import Optional
 
@@ -14,8 +14,7 @@ class ChildCreate(ChildBase):
 class ChildRead(ChildBase):
     id: int
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 # -----------------------------
 # LogEntry Schemas
@@ -34,8 +33,7 @@ class LogEntryCreate(LogEntryBase):
 class LogEntryRead(LogEntryBase):
     id: int
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 # -----------------------------
 # Document Schemas
@@ -51,8 +49,7 @@ class DocumentCreate(DocumentBase):
 class DocumentRead(DocumentBase):
     id: int
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 # -----------------------------
 # ExplorationTip Schemas
@@ -69,5 +66,4 @@ class ExplorationTipRead(ExplorationTipBase):
     id: int
     created_at: datetime
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
