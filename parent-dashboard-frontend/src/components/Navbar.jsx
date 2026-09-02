@@ -1,80 +1,49 @@
-import React from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
+import { useAuth } from "../auth/AuthContext";
 
-export default function Navbar({ loggedIn, setLoggedIn }) {
+const linkClass = ({ isActive }) =>
+  isActive
+    ? "text-indigo-600"
+    : "text-gray-600 hover:text-indigo-600 transition";
+
+export default function Navbar() {
+  const { isAuthenticated, parent, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate("/login");
+  };
+
   return (
     <nav className="bg-white border-b border-gray-200">
       <div className="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center">
-
-        {/* Logo / Brand */}
         <div className="text-lg font-semibold text-gray-800 tracking-tight">
           Parent Dashboard
         </div>
 
-        {/* Navigation */}
         <div className="flex items-center gap-6 text-sm font-medium">
-          {loggedIn ? (
+          {isAuthenticated ? (
             <>
-              <NavLink
-                to="/"
-                className={({ isActive }) =>
-                  isActive
-                    ? "text-indigo-600"
-                    : "text-gray-600 hover:text-indigo-600 transition"
-                }
-              >
-                Dashboard
-              </NavLink>
-
-              <NavLink
-                to="/logs"
-                className={({ isActive }) =>
-                  isActive
-                    ? "text-indigo-600"
-                    : "text-gray-600 hover:text-indigo-600 transition"
-                }
-              >
-                Logs
-              </NavLink>
-
-              <NavLink
-                to="/documents"
-                className={({ isActive }) =>
-                  isActive
-                    ? "text-indigo-600"
-                    : "text-gray-600 hover:text-indigo-600 transition"
-                }
-              >
-                Documents
-              </NavLink>
-
-              <NavLink
-                to="/ai-summary"
-                className={({ isActive }) =>
-                  isActive
-                    ? "text-indigo-600"
-                    : "text-gray-600 hover:text-indigo-600 transition"
-                }
-              >
-                AI Insights
-              </NavLink>
-
+              <NavLink to="/" end className={linkClass}>Dashboard</NavLink>
+              <NavLink to="/logs" className={linkClass}>Logs</NavLink>
+              <NavLink to="/documents" className={linkClass}>Documents</NavLink>
+              <NavLink to="/ai-summary" className={linkClass}>AI Insights</NavLink>
+              {parent?.email && (
+                <span className="text-gray-400 hidden sm:inline">{parent.email}</span>
+              )}
               <button
-                onClick={() => setLoggedIn(false)}
-                className="ml-4 bg-indigo-600 text-white px-4 py-1.5 rounded-lg hover:bg-indigo-700 transition shadow-sm"
+                onClick={handleLogout}
+                className="ml-2 bg-indigo-600 text-white px-4 py-1.5 rounded-lg hover:bg-indigo-700 transition shadow-sm"
               >
                 Logout
               </button>
             </>
           ) : (
             <>
-              <NavLink
-                to="/login"
-                className="text-gray-600 hover:text-indigo-600 transition"
-              >
+              <NavLink to="/login" className="text-gray-600 hover:text-indigo-600 transition">
                 Login
               </NavLink>
-
               <NavLink
                 to="/signup"
                 className="bg-indigo-600 text-white px-4 py-1.5 rounded-lg hover:bg-indigo-700 transition shadow-sm"

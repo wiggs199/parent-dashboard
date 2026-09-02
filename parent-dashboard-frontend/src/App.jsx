@@ -1,6 +1,6 @@
-import React, { useState } from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 
+import { AuthProvider } from "./auth/AuthProvider";
 import AppLayout from "./components/AppLayout";
 import ProtectedRoute from "./components/ProtectedRoute";
 
@@ -11,61 +11,30 @@ import AISummary from "./pages/AISummary";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 
-export default function App() {
-  const [loggedIn, setLoggedIn] = useState(false);
-
+function Protected({ children }) {
   return (
-    <Router>
-      <Routes>
-
-        {/* Public Routes */}
-        <Route path="/login" element={<Login setLoggedIn={setLoggedIn} />} />
-        <Route path="/signup" element={<Signup setLoggedIn={setLoggedIn} />} />
-
-        {/* Protected Routes */}
-        <Route
-          path="/"
-          element={
-            <ProtectedRoute loggedIn={loggedIn}>
-              <AppLayout loggedIn={loggedIn} setLoggedIn={setLoggedIn}>
-                <Dashboard />
-              </AppLayout>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/logs"
-          element={
-            <ProtectedRoute loggedIn={loggedIn}>
-              <AppLayout loggedIn={loggedIn} setLoggedIn={setLoggedIn}>
-                <Logs />
-              </AppLayout>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/documents"
-          element={
-            <ProtectedRoute loggedIn={loggedIn}>
-              <AppLayout loggedIn={loggedIn} setLoggedIn={setLoggedIn}>
-                <Documents />
-              </AppLayout>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/ai-summary"
-          element={
-            <ProtectedRoute loggedIn={loggedIn}>
-              <AppLayout loggedIn={loggedIn} setLoggedIn={setLoggedIn}>
-                <AISummary />
-              </AppLayout>
-            </ProtectedRoute>
-          }
-        />
-
-      </Routes>
-    </Router>
+    <ProtectedRoute>
+      <AppLayout>{children}</AppLayout>
+    </ProtectedRoute>
   );
 }
 
+export default function App() {
+  return (
+    <AuthProvider>
+      <Router>
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
+
+          <Route path="/" element={<Protected><Dashboard /></Protected>} />
+          <Route path="/logs" element={<Protected><Logs /></Protected>} />
+          <Route path="/documents" element={<Protected><Documents /></Protected>} />
+          <Route path="/ai-summary" element={<Protected><AISummary /></Protected>} />
+
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </Router>
+    </AuthProvider>
+  );
+}

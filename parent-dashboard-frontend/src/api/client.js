@@ -1,0 +1,40 @@
+import axios from "axios";
+import { getToken, clearToken } from "../auth/token";
+
+const baseURL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
+
+const client = axios.create({ baseURL });
+
+// Attach the bearer token (if any) to every request.
+client.interceptors.request.use((config) => {
+  const token = getToken();
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
+// If the token is missing/expired/invalid, drop it and send the user to login.
+client.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401 && getToken()) {
+      clearToken();
+      if (window.location.pathname !== "/login") {
+        window.location.assign("/login");
+      }
+    }
+    return Promise.reject(error);
+  },
+);
+
+// Pull a human-readable message out of an axios error for form display.
+export function errorMessage(error, fallback = "Something went wrong. Please try again.") {
+  const detail = error?.response?.data?.detail;
+  if (typeof detail === "string") return detail;
+  if (Array.isArray(detail) && detail[0]?.msg) return detail[0].msg;
+  if (error?.code === "ERR_NETWORK") return "Can't reach the server. Is the backend running?";
+  return fallback;
+}
+
+export default client;

@@ -1,16 +1,48 @@
-# React + Vite
+# Parent Dashboard — Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+React 19 + Vite + Tailwind. Talks to the FastAPI backend.
 
-Currently, two official plugins are available:
+## Setup
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+```bash
+cd parent-dashboard-frontend
+npm install
+```
 
-## React Compiler
+`.env` sets the API base URL (defaults to `http://localhost:8000`):
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+```
+VITE_API_BASE_URL=http://localhost:8000
+```
 
-## Expanding the ESLint configuration
+## Run
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+```bash
+npm run dev      # http://localhost:5173
+```
+
+The backend must be running (see `../parent-dashboard-backend/README.md`).
+
+```bash
+npm run build    # production bundle in dist/
+npm run lint
+```
+
+## Auth
+
+The JWT from `/auth/login` or `/auth/signup` is kept in `localStorage`
+(`pd_token`). `src/api/client.js` attaches it to every request and, on a
+401, clears it and redirects to `/login`. Auth state lives in
+`src/auth/AuthProvider.jsx` and is read with the `useAuth()` hook.
+
+## Where things are
+
+| Path | What |
+|---|---|
+| `src/api/client.js` | axios instance + interceptors + `errorMessage()` |
+| `src/api/resources.js` | typed calls for children / logs / documents / tips |
+| `src/auth/` | token storage, context, provider |
+| `src/pages/Login,Signup` | real auth forms |
+| `src/pages/Dashboard` | list + add children (live) |
+| `src/pages/Logs` | pick a child, view + add logs (live) |
+| `src/pages/Documents,AISummary` | still placeholders |
