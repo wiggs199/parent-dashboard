@@ -51,27 +51,34 @@ Check `https://…/health` returns `{"status":"ok"}`.
 
 ---
 
-## 3. Frontend — Cloudflare Pages
+## 3. Frontend — Cloudflare (Workers static assets, deployed via CLI)
 
-1. Cloudflare dashboard → **Workers & Pages → Create → Pages → Connect to Git**.
-2. Pick the repo. Build settings:
-   - **Root directory:** `parent-dashboard-frontend`
-   - **Build command:** `npm run build`
-   - **Build output directory:** `dist`
-   - **Framework preset:** Vite (or None)
-3. Environment variables:
-   - `VITE_API_BASE_URL` → the Render URL from step 2 (no trailing slash)
-4. Deploy. Note the URL: `https://parent-dashboard.pages.dev`.
+Cloudflare's Git integration kept deploying the raw source instead of the
+Vite build, so the frontend deploys from the command line with `wrangler`.
+Config lives in `parent-dashboard-frontend/wrangler.jsonc` (serves `./dist`
+with SPA fallback — no `_redirects` file, that's Pages-only).
 
-SPA routing is handled by `public/_redirects` (already in the repo).
+```bash
+cd parent-dashboard-frontend
+npx wrangler login          # one-time, opens a browser
+# set the API URL for the build:
+echo "VITE_API_BASE_URL=https://parent-dashboard-api.onrender.com" > .env
+npm run build
+npx wrangler deploy
+```
+
+`wrangler deploy` prints the URL (e.g. `https://parent-dashboard.<sub>.workers.dev`).
+
+To ship a change later: `npm run build && npx wrangler deploy`.
+(Reconnecting push-to-deploy via the dashboard is a later nicety.)
 
 ---
 
 ## 4. Connect the two
 
 1. In Render → the API service → Environment, set
-   `CORS_ORIGINS` = the Cloudflare Pages URL
-   (e.g. `https://parent-dashboard.pages.dev`). Add your custom domain too,
+   `CORS_ORIGINS` = the Cloudflare Worker URL
+   (e.g. `https://parent-dashboard.<sub>.workers.dev`). Add your custom domain too,
    comma-separated, if you have one.
 2. Save — Render redeploys.
 
