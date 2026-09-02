@@ -11,7 +11,7 @@ assert_production_config()
 # Schema is managed by Alembic — run `alembic upgrade head` (locally and as
 # the Render pre-deploy command). No create_all here.
 
-app = FastAPI(title="Parent Dashboard MVP")
+app = FastAPI(title="NovaPath API")
 
 app.add_middleware(
     CORSMiddleware,

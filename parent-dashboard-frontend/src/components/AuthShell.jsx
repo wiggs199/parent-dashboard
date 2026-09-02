@@ -1,5 +1,6 @@
 import { Sparkles } from "lucide-react";
 import { Link } from "react-router-dom";
+import { SITE } from "../siteConfig";
 
 export default function AuthShell({ title, subtitle, children, footer }) {
   return (
@@ -8,6 +9,9 @@ export default function AuthShell({ title, subtitle, children, footer }) {
         <div className="mb-6 flex flex-col items-center gap-2 text-center">
           <span className="grid h-10 w-10 place-items-center rounded-xl bg-sage text-surface">
             <Sparkles size={18} />
+          </span>
+          <span className="text-sm font-semibold tracking-tight text-ink-soft">
+            {SITE.name}
           </span>
           <h1 className="text-xl font-semibold tracking-tight text-ink">{title}</h1>
           {subtitle && <p className="text-sm text-ink-soft">{subtitle}</p>}

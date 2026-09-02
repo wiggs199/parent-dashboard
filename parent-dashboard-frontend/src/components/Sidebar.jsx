@@ -10,6 +10,7 @@ import {
   X,
 } from "lucide-react";
 import { useAuth } from "../auth/AuthContext";
+import { SITE } from "../siteConfig";
 
 const NAV = [
   { to: "/", label: "Dashboard", Icon: LayoutDashboard, end: true },
@@ -34,7 +35,7 @@ function Brand() {
         <Sparkles size={16} />
       </span>
       <span className="text-[15px] font-semibold tracking-tight text-ink">
-        Parent Dashboard
+        {SITE.name}
       </span>
     </div>
   );

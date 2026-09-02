@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { Sparkles } from "lucide-react";
+import { SITE } from "../siteConfig";
 
 export default function LegalLayout({ title, updated, children }) {
   return (
@@ -11,7 +12,7 @@ export default function LegalLayout({ title, updated, children }) {
               <Sparkles size={16} />
             </span>
             <span className="text-[15px] font-semibold tracking-tight text-ink">
-              Parent Dashboard
+              {SITE.name}
             </span>
           </Link>
           <Link to="/login" className="text-sm font-medium text-sage-dark hover:underline">
