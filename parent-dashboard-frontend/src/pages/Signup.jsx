@@ -2,6 +2,8 @@ import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
 import { errorMessage } from "../api/client";
+import AuthShell from "../components/AuthShell";
+import { Button, TextInput, Field, Alert } from "../components/ui";
 
 export default function Signup() {
   const { signup } = useAuth();
@@ -31,61 +33,50 @@ export default function Signup() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-purple-100 to-indigo-200 px-4">
-      <div className="w-full max-w-md bg-white p-8 rounded-xl shadow-xl">
-        <h1 className="text-3xl font-bold text-center text-indigo-700 mb-6">
-          Create Account
-        </h1>
-
-        {error && (
-          <div className="mb-4 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-2">
-            {error}
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit} className="flex flex-col space-y-4">
-          <input
+    <AuthShell
+      title="Create your account"
+      subtitle="One place for logs, documents, and notes"
+      footer={
+        <>
+          Already have an account?{" "}
+          <Link to="/login" className="font-medium text-sage-dark hover:underline">
+            Sign in
+          </Link>
+        </>
+      }
+    >
+      <form onSubmit={handleSubmit} className="space-y-4">
+        {error && <Alert>{error}</Alert>}
+        <Field label="Name" hint="Optional">
+          <TextInput
             type="text"
-            placeholder="Name (optional)"
             autoComplete="name"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400"
           />
-          <input
+        </Field>
+        <Field label="Email">
+          <TextInput
             type="email"
-            placeholder="Email"
             required
             autoComplete="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400"
           />
-          <input
+        </Field>
+        <Field label="Password" hint="At least 8 characters">
+          <TextInput
             type="password"
-            placeholder="Password (min 8 characters)"
             required
             autoComplete="new-password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400"
           />
-          <button
-            type="submit"
-            disabled={submitting}
-            className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white p-3 rounded-lg font-semibold shadow hover:from-indigo-600 hover:to-purple-600 transition-colors disabled:opacity-60"
-          >
-            {submitting ? "Creating account…" : "Sign Up"}
-          </button>
-        </form>
-
-        <div className="text-center mt-4 text-gray-500 text-sm">
-          Already have an account?{" "}
-          <Link to="/login" className="text-indigo-600 font-medium">
-            Login
-          </Link>
-        </div>
-      </div>
-    </div>
+        </Field>
+        <Button type="submit" disabled={submitting} className="w-full">
+          {submitting ? "Creating account…" : "Create account"}
+        </Button>
+      </form>
+    </AuthShell>
   );
 }

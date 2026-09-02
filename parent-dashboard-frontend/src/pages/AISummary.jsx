@@ -1,15 +1,32 @@
-import React from "react";
+import { Sparkles } from "lucide-react";
+import PageHeader from "../components/PageHeader";
+import { Card } from "../components/ui";
 
 export default function AISummary() {
-  const aiSummary =
-    "This is a placeholder AI summary of your children's progress. Later, AI will generate real insights!";
-
   return (
-    <div className="space-y-6">
-      <h1 className="text-3xl font-bold text-gray-800">AI Summary</h1>
-      <div className="bg-indigo-50 border-l-4 border-indigo-600 p-6 rounded-md shadow-sm">
-        <p className="text-gray-700">{aiSummary}</p>
-      </div>
+    <div>
+      <PageHeader
+        title="AI Insights"
+        subtitle="Neutral, observational summaries drawn only from what you've logged."
+      />
+
+      <Card className="mb-6 p-6">
+        <div className="flex items-start gap-3">
+          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-sage-soft text-sage">
+            <Sparkles size={18} strokeWidth={1.75} />
+          </span>
+          <p className="text-sm leading-relaxed text-ink-soft">
+            Weekly and monthly summaries will appear here once you've built up a
+            few logs. They describe what was recorded — no scoring, no advice, no
+            evaluation of progress.
+          </p>
+        </div>
+      </Card>
+
+      <p className="text-xs text-ink-faint">
+        This is an organizational support tool. Summaries are not a clinical
+        assessment.
+      </p>
     </div>
   );
 }

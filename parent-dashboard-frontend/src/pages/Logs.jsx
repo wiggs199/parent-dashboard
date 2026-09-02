@@ -1,5 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
+import { NotebookPen, Plus } from "lucide-react";
+import PageHeader from "../components/PageHeader";
+import { Card, Button, Select, TextInput, Textarea, Field, Alert, EmptyState } from "../components/ui";
 import { listChildren, listLogs, createLog } from "../api/resources";
 import { errorMessage } from "../api/client";
 
@@ -13,33 +16,45 @@ const EMPTY_FORM = () => ({
   notes: "",
 });
 
+function formatDate(iso) {
+  const d = new Date(`${iso}T00:00:00`);
+  return d.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" });
+}
+
+function TypeBadge({ type }) {
+  const exploration = type === "exploration";
+  return (
+    <span
+      className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+        exploration ? "bg-clay-soft text-clay" : "bg-sage-soft text-sage-dark"
+      }`}
+    >
+      {type}
+    </span>
+  );
+}
+
 export default function Logs() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [children, setChildren] = useState([]);
   const [childId, setChildId] = useState(null);
-
   const [logs, setLogs] = useState([]);
   const [loadingLogs, setLoadingLogs] = useState(false);
   const [error, setError] = useState("");
-
   const [form, setForm] = useState(EMPTY_FORM);
   const [saving, setSaving] = useState(false);
 
-  // Load children once, then pick the active child from ?child= or the first one.
   useEffect(() => {
     listChildren()
       .then((data) => {
         setChildren(data);
         const wanted = Number(searchParams.get("child"));
-        const initial =
-          data.find((c) => c.id === wanted)?.id ?? data[0]?.id ?? null;
-        setChildId(initial);
+        setChildId(data.find((c) => c.id === wanted)?.id ?? data[0]?.id ?? null);
       })
       .catch((err) => setError(errorMessage(err)));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Reload logs whenever the active child changes.
   useEffect(() => {
     if (!childId) return;
     setLoadingLogs(true);
@@ -65,15 +80,14 @@ export default function Logs() {
     setSaving(true);
     setError("");
     try {
-      const payload = {
+      const created = await createLog({
         child_id: childId,
         date: form.date,
         type: form.type,
         practiced_items: form.practiced_items.trim() || null,
         mood_rating: form.mood_rating === "" ? null : Number(form.mood_rating),
         notes: form.notes.trim() || null,
-      };
-      const created = await createLog(payload);
+      });
       setLogs((prev) => [created, ...prev]);
       setForm(EMPTY_FORM());
     } catch (err) {
@@ -83,143 +97,112 @@ export default function Logs() {
     }
   };
 
-  if (children.length === 0) {
-    return (
-      <div className="space-y-4">
-        <h1 className="text-3xl font-bold text-gray-800">Logs</h1>
-        <p className="text-gray-500">
-          {error || "Add a child on the dashboard first, then you can log activities here."}
-        </p>
-      </div>
-    );
-  }
+  const childPicker =
+    children.length > 0 ? (
+      <Select
+        value={childId ?? ""}
+        onChange={(e) => setChildId(Number(e.target.value))}
+        className="sm:w-48"
+      >
+        {children.map((c) => (
+          <option key={c.id} value={c.id}>{c.name}</option>
+        ))}
+      </Select>
+    ) : null;
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        <h1 className="text-3xl font-bold text-gray-800">Logs</h1>
-        <select
-          value={childId ?? ""}
-          onChange={(e) => setChildId(Number(e.target.value))}
-          className="p-2.5 border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-indigo-400"
-        >
-          {children.map((c) => (
-            <option key={c.id} value={c.id}>{c.name}</option>
-          ))}
-        </select>
-      </div>
+    <div>
+      <PageHeader
+        title="Logs"
+        subtitle="A calm record of exercises and exploration, day by day."
+        action={childPicker}
+      />
 
       {error && (
-        <div className="rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm px-4 py-2">
-          {error}
+        <div className="mb-6">
+          <Alert>{error}</Alert>
         </div>
       )}
 
-      {/* Add log */}
-      <form onSubmit={handleSubmit} className="bg-white p-6 rounded-xl shadow-sm space-y-4">
-        <h2 className="font-semibold text-gray-800">
-          New log{activeChild ? ` for ${activeChild.name}` : ""}
-        </h2>
-
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <label className="text-sm text-gray-600">
-            Date
-            <input
-              type="date"
-              value={form.date}
-              onChange={setField("date")}
-              max={TODAY()}
-              required
-              className="mt-1 w-full p-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400"
-            />
-          </label>
-          <label className="text-sm text-gray-600">
-            Type
-            <select
-              value={form.type}
-              onChange={setField("type")}
-              className="mt-1 w-full p-2.5 border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-indigo-400"
-            >
-              <option value="exercise">Exercise (tracking)</option>
-              <option value="exploration">Exploration (reflection)</option>
-            </select>
-          </label>
-          <label className="text-sm text-gray-600">
-            Mood (1–5, optional)
-            <input
-              type="number"
-              min="1"
-              max="5"
-              value={form.mood_rating}
-              onChange={setField("mood_rating")}
-              className="mt-1 w-full p-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400"
-            />
-          </label>
-        </div>
-
-        <label className="block text-sm text-gray-600">
-          Practiced items / activities
-          <input
-            type="text"
-            value={form.practiced_items}
-            onChange={setField("practiced_items")}
-            placeholder="e.g. /s/ sounds, soccer drills"
-            className="mt-1 w-full p-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400"
-          />
-        </label>
-
-        <label className="block text-sm text-gray-600">
-          Notes
-          <textarea
-            value={form.notes}
-            onChange={setField("notes")}
-            rows={3}
-            placeholder="What happened, how it went…"
-            className="mt-1 w-full p-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400"
-          />
-        </label>
-
-        <button
-          type="submit"
-          disabled={saving}
-          className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition disabled:opacity-60"
-        >
-          {saving ? "Saving…" : "Add log"}
-        </button>
-      </form>
-
-      {/* Log list */}
-      <div className="bg-white rounded-xl shadow-sm divide-y divide-gray-100">
-        {loadingLogs ? (
-          <p className="p-6 text-gray-500">Loading…</p>
-        ) : logs.length === 0 ? (
-          <p className="p-6 text-gray-500">No logs yet for this child.</p>
-        ) : (
-          logs.map((log) => (
-            <div key={log.id} className="p-4 sm:p-6">
-              <div className="flex items-center justify-between">
-                <span className="font-medium text-gray-800">{log.date}</span>
-                <span
-                  className={`text-xs font-medium px-2 py-0.5 rounded-full ${
-                    log.type === "exploration"
-                      ? "bg-amber-100 text-amber-700"
-                      : "bg-sky-100 text-sky-700"
-                  }`}
-                >
-                  {log.type}
-                </span>
+      {children.length === 0 ? (
+        <EmptyState icon={NotebookPen} title="No children yet">
+          Add a child on the dashboard first, then you can log activities here.
+        </EmptyState>
+      ) : (
+        <>
+          {/* Add log */}
+          <Card className="mb-8 p-5">
+            <h2 className="mb-4 text-sm font-semibold text-ink">
+              New log{activeChild ? ` · ${activeChild.name}` : ""}
+            </h2>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                <Field label="Date">
+                  <TextInput type="date" max={TODAY()} required value={form.date} onChange={setField("date")} />
+                </Field>
+                <Field label="Type">
+                  <Select value={form.type} onChange={setField("type")}>
+                    <option value="exercise">Exercise (tracking)</option>
+                    <option value="exploration">Exploration (reflection)</option>
+                  </Select>
+                </Field>
+                <Field label="Mood" hint="Optional, 1–5">
+                  <TextInput type="number" min="1" max="5" value={form.mood_rating} onChange={setField("mood_rating")} />
+                </Field>
               </div>
-              {log.practiced_items && (
-                <p className="text-gray-700 mt-1">{log.practiced_items}</p>
-              )}
-              {log.notes && <p className="text-gray-500 text-sm mt-1">{log.notes}</p>}
-              {log.mood_rating != null && (
-                <p className="text-gray-400 text-xs mt-1">Mood: {log.mood_rating}/5</p>
-              )}
-            </div>
-          ))
-        )}
-      </div>
+              <Field label="Practiced items / activities">
+                <TextInput
+                  placeholder="e.g. /s/ sounds, soccer drills"
+                  value={form.practiced_items}
+                  onChange={setField("practiced_items")}
+                />
+              </Field>
+              <Field label="Notes">
+                <Textarea
+                  rows={3}
+                  placeholder="What happened, how it went…"
+                  value={form.notes}
+                  onChange={setField("notes")}
+                />
+              </Field>
+              <Button type="submit" disabled={saving}>
+                <Plus size={16} />
+                {saving ? "Saving…" : "Add log"}
+              </Button>
+            </form>
+          </Card>
+
+          {/* Timeline */}
+          {loadingLogs ? (
+            <p className="text-sm text-ink-soft">Loading…</p>
+          ) : logs.length === 0 ? (
+            <EmptyState icon={NotebookPen} title="No logs yet">
+              Add the first log above. Entries appear here newest first.
+            </EmptyState>
+          ) : (
+            <ol className="relative space-y-6 border-l border-line pl-6">
+              {logs.map((log) => (
+                <li key={log.id} className="relative">
+                  <span className="absolute -left-[1.6875rem] top-1.5 h-2.5 w-2.5 rounded-full border-2 border-canvas bg-sage" />
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="text-sm font-medium text-ink">{formatDate(log.date)}</span>
+                    <TypeBadge type={log.type} />
+                    {log.mood_rating != null && (
+                      <span className="text-xs text-ink-faint">mood {log.mood_rating}/5</span>
+                    )}
+                  </div>
+                  {log.practiced_items && (
+                    <p className="mt-1 text-sm text-ink">{log.practiced_items}</p>
+                  )}
+                  {log.notes && (
+                    <p className="mt-1 text-sm text-ink-soft">{log.notes}</p>
+                  )}
+                </li>
+              ))}
+            </ol>
+          )}
+        </>
+      )}
     </div>
   );
 }
