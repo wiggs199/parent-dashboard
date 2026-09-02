@@ -1,6 +1,6 @@
 # Deploying Parent Dashboard
 
-Stack: **Neon** (Postgres) · **Render** (backend API) · **Cloudflare Pages** (frontend).
+Stack: **Neon** (Postgres) · **Render** (backend API) · **Cloudflare** (frontend).
 All three deploy from the GitHub repo. Cost to launch: $0.
 
 ---
@@ -92,7 +92,7 @@ On the live Cloudflare URL:
 - [ ] Add a child
 - [ ] Add a log, reload the page — it's still there
 - [ ] Log out and back in
-- [ ] Open `/privacy` and `/terms` directly (tests the `_redirects` rule)
+- [ ] Open `/privacy` and `/terms` directly (SPA fallback)
 
 ---
 
