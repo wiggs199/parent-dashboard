@@ -1,8 +1,13 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.database import engine, Base
-from app.routes import children, logs, documents, exploration_tips
+from app import auth
+from app.config import CORS_ORIGINS, assert_production_config
+from app.database import Base, engine
+from app.routes import children, documents, exploration_tips, logs
+
+# Refuse to start with the dev secret when ENV says this is not dev.
+assert_production_config()
 
 # -----------------------------
 # Create database tables
@@ -14,13 +19,9 @@ Base.metadata.create_all(bind=engine)
 # -----------------------------
 app = FastAPI(title="Parent Dashboard MVP")
 
-# Allow the Vite dev server to call the API from the browser.
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",
-        "http://127.0.0.1:5173",
-    ],
+    allow_origins=CORS_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -29,6 +30,7 @@ app.add_middleware(
 # -----------------------------
 # Routers
 # -----------------------------
+app.include_router(auth.router)
 app.include_router(children.router, prefix="/children", tags=["Children"])
 app.include_router(logs.router, prefix="/logs", tags=["Logs"])
 app.include_router(documents.router, prefix="/documents", tags=["Documents"])
