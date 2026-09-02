@@ -55,6 +55,29 @@ export function AuthProvider({ children }) {
     setParent(null);
   }, []);
 
-  const value = { parent, loading, isAuthenticated: !!parent, login, signup, logout };
+  // Adopt a token we already hold (e.g. returned by /auth/reset-password).
+  const adoptToken = useCallback(async (token) => {
+    setToken(token);
+    const me = await client.get("/auth/me");
+    setParent(me.data);
+  }, []);
+
+  // Re-read the current parent (e.g. after confirming email).
+  const refreshParent = useCallback(async () => {
+    if (!getToken()) return;
+    const me = await client.get("/auth/me");
+    setParent(me.data);
+  }, []);
+
+  const value = {
+    parent,
+    loading,
+    isAuthenticated: !!parent,
+    login,
+    signup,
+    logout,
+    adoptToken,
+    refreshParent,
+  };
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

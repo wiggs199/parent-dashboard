@@ -60,6 +60,11 @@ export default function Login() {
             onChange={(e) => setPassword(e.target.value)}
           />
         </Field>
+        <div className="-mt-1 text-right">
+          <Link to="/forgot-password" className="text-xs text-ink-soft hover:underline">
+            Forgot password?
+          </Link>
+        </div>
         <Button type="submit" disabled={submitting} className="w-full">
           {submitting ? "Signing in…" : "Sign in"}
         </Button>

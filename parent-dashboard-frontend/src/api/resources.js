@@ -1,5 +1,15 @@
 import client from "./client";
 
+// Auth — account recovery / verification
+export const verifyEmail = (token) =>
+  client.post("/auth/verify-email", { token }).then((r) => r.data);
+export const resendVerification = () =>
+  client.post("/auth/resend-verification").then((r) => r.data);
+export const forgotPassword = (email) =>
+  client.post("/auth/forgot-password", { email }).then((r) => r.data);
+export const resetPassword = (token, newPassword) =>
+  client.post("/auth/reset-password", { token, new_password: newPassword }).then((r) => r.data);
+
 // Children
 export const listChildren = () => client.get("/children").then((r) => r.data);
 export const createChild = (name) =>
