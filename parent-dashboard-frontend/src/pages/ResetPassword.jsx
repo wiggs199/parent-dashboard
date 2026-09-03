@@ -38,7 +38,7 @@ export default function ResetPassword() {
     <AuthShell
       title="Choose a new password"
       footer={
-        <Link to="/login" className="font-medium text-sage-dark hover:underline">
+        <Link to="/login" className="font-medium text-pine-dark hover:underline">
           Back to sign in
         </Link>
       }

@@ -34,7 +34,7 @@ export default function ForgotPassword() {
       footer={
         <>
           Remembered it?{" "}
-          <Link to="/login" className="font-medium text-sage-dark hover:underline">
+          <Link to="/login" className="font-medium text-pine-dark hover:underline">
             Sign in
           </Link>
         </>
@@ -46,7 +46,7 @@ export default function ForgotPassword() {
           Email{" "}
           <a
             href={`mailto:${SITE.contactEmail}?subject=${encodeURIComponent("Password reset")}`}
-            className="font-medium text-sage-dark hover:underline"
+            className="font-medium text-pine-dark hover:underline"
           >
             {SITE.contactEmail}
           </a>{" "}

@@ -1,9 +1,12 @@
 // Small shared primitives so every page looks like one app.
+import NovaMark from "./NovaMark";
 
-export function Card({ className = "", children, ...rest }) {
+export function Card({ className = "", elevated = false, children, ...rest }) {
   return (
     <div
-      className={`rounded-xl border border-line bg-surface ${className}`}
+      className={`rounded-[var(--radius-card)] border border-line bg-surface ${
+        elevated ? "shadow-[var(--shadow-card)]" : ""
+      } ${className}`}
       {...rest}
     >
       {children}
@@ -12,12 +15,10 @@ export function Card({ className = "", children, ...rest }) {
 }
 
 const BUTTON_VARIANTS = {
-  primary:
-    "bg-sage text-surface hover:bg-sage-dark disabled:opacity-50",
-  ghost:
-    "bg-transparent text-ink-soft hover:bg-surface-sunk hover:text-ink disabled:opacity-50",
-  outline:
-    "border border-line-strong bg-surface text-ink hover:bg-surface-sunk disabled:opacity-50",
+  primary: "bg-pine text-white shadow-[var(--shadow-btn)] hover:bg-pine-dark",
+  warm: "bg-persimmon text-white shadow-[var(--shadow-btn)] hover:bg-persimmon-dark",
+  ghost: "bg-transparent text-ink-soft hover:bg-surface-sunk hover:text-ink",
+  outline: "border border-line-strong bg-surface text-ink hover:bg-surface-sunk",
 };
 
 export function Button({
@@ -30,7 +31,7 @@ export function Button({
   return (
     <button
       type={type}
-      className={`inline-flex items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-colors disabled:cursor-not-allowed ${BUTTON_VARIANTS[variant]} ${className}`}
+      className={`inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2 text-sm font-semibold transition-[background-color,box-shadow,transform] duration-150 active:translate-y-px disabled:cursor-not-allowed disabled:opacity-50 ${BUTTON_VARIANTS[variant]} ${className}`}
       {...rest}
     >
       {children}
@@ -39,7 +40,7 @@ export function Button({
 }
 
 const inputBase =
-  "w-full rounded-lg border border-line-strong bg-surface px-3 py-2 text-sm text-ink placeholder:text-ink-faint focus:border-sage focus:outline-none focus:ring-2 focus:ring-sage/25";
+  "w-full rounded-xl border border-line-strong bg-surface px-3 py-2 text-sm text-ink placeholder:text-ink-faint transition-colors focus:border-pine focus:outline-none focus:ring-2 focus:ring-pine/25";
 
 export function TextInput({ className = "", ...rest }) {
   return <input className={`${inputBase} ${className}`} {...rest} />;
@@ -60,7 +61,7 @@ export function Textarea({ className = "", ...rest }) {
 export function Field({ label, hint, children }) {
   return (
     <label className="block">
-      <span className="mb-1 block text-sm font-medium text-ink">{label}</span>
+      <span className="mb-1.5 block text-sm font-semibold text-ink">{label}</span>
       {children}
       {hint && <span className="mt-1 block text-xs text-ink-faint">{hint}</span>}
     </label>
@@ -69,7 +70,7 @@ export function Field({ label, hint, children }) {
 
 export function Alert({ children }) {
   return (
-    <div className="rounded-lg border border-clay/30 bg-clay-soft px-4 py-2.5 text-sm text-clay">
+    <div className="rounded-xl border border-persimmon/30 bg-persimmon-soft px-4 py-2.5 text-sm text-persimmon-dark">
       {children}
     </div>
   );
@@ -77,14 +78,17 @@ export function Alert({ children }) {
 
 export function EmptyState({ icon: Icon, title, children }) {
   return (
-    <Card className="flex flex-col items-center gap-3 px-6 py-14 text-center">
-      {Icon && (
-        <span className="grid h-11 w-11 place-items-center rounded-full bg-sage-soft text-sage">
-          <Icon size={20} strokeWidth={1.75} />
-        </span>
+    <Card
+      elevated
+      className="flex flex-col items-center gap-3 px-6 py-16 text-center"
+    >
+      <span className="relative grid h-12 w-12 place-items-center rounded-2xl bg-pine-soft text-pine">
+        {Icon ? <Icon size={20} strokeWidth={1.75} /> : <NovaMark size={20} />}
+      </span>
+      <p className="font-display text-lg text-ink">{title}</p>
+      {children && (
+        <p className="max-w-sm text-sm leading-relaxed text-ink-soft">{children}</p>
       )}
-      <p className="text-sm font-medium text-ink">{title}</p>
-      {children && <p className="max-w-sm text-sm text-ink-soft">{children}</p>}
     </Card>
   );
 }

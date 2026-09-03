@@ -10,6 +10,8 @@ export const forgotPassword = (email) =>
 export const resetPassword = (token, newPassword) =>
   client.post("/auth/reset-password", { token, new_password: newPassword }).then((r) => r.data);
 
+export const getStats = () => client.get("/auth/stats").then((r) => r.data);
+
 // Children
 export const listChildren = () => client.get("/children").then((r) => r.data);
 export const getChild = (id) => client.get(`/children/${id}`).then((r) => r.data);

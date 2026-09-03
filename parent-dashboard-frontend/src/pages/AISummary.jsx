@@ -12,7 +12,7 @@ export default function AISummary() {
 
       <Card className="mb-6 p-6">
         <div className="flex items-start gap-3">
-          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-sage-soft text-sage">
+          <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-pine-soft text-pine">
             <Sparkles size={18} strokeWidth={1.75} />
           </span>
           <p className="text-sm leading-relaxed text-ink-soft">

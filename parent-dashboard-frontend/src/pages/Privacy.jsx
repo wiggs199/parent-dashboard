@@ -63,7 +63,7 @@ export default function Privacy() {
       <LegalSection heading="Retention and deletion">
         <p>
           We keep your data until you delete it or ask us to. Email{" "}
-          <a href={`mailto:${SITE.contactEmail}`} className="text-sage-dark hover:underline">
+          <a href={`mailto:${SITE.contactEmail}`} className="text-pine-dark hover:underline">
             {SITE.contactEmail}
           </a>{" "}
           to request export or deletion of your account and its contents.
@@ -88,7 +88,7 @@ export default function Privacy() {
       <LegalSection heading="Contact">
         <p>
           Questions:{" "}
-          <a href={`mailto:${SITE.contactEmail}`} className="text-sage-dark hover:underline">
+          <a href={`mailto:${SITE.contactEmail}`} className="text-pine-dark hover:underline">
             {SITE.contactEmail}
           </a>
           .

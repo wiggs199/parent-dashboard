@@ -1,5 +1,8 @@
+from datetime import date, timedelta
+
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from app import mailer, models, schemas
@@ -64,6 +67,47 @@ def login(
 @router.get("/me", response_model=schemas.ParentRead)
 def read_me(parent: models.Parent = Depends(get_current_parent)):
     return parent
+
+
+@router.get("/stats")
+def dashboard_stats(
+    db: Session = Depends(get_db),
+    parent: models.Parent = Depends(get_current_parent),
+):
+    child_ids = [
+        c.id for c in db.query(models.Child.id).filter(models.Child.parent_id == parent.id)
+    ]
+    week_ago = date.today() - timedelta(days=7)
+
+    per_child = {}
+    logs_this_week = 0
+    if child_ids:
+        rows = (
+            db.query(models.LogEntry.child_id, func.count(models.LogEntry.id))
+            .filter(
+                models.LogEntry.child_id.in_(child_ids),
+                models.LogEntry.date >= week_ago,
+            )
+            .group_by(models.LogEntry.child_id)
+            .all()
+        )
+        per_child = {cid: n for cid, n in rows}
+        logs_this_week = sum(per_child.values())
+
+    documents = (
+        db.query(func.count(models.Document.id))
+        .filter(models.Document.child_id.in_(child_ids))
+        .scalar()
+        if child_ids
+        else 0
+    )
+
+    return {
+        "children": len(child_ids),
+        "logs_this_week": logs_this_week,
+        "documents": documents,
+        "per_child": {str(cid): per_child.get(cid, 0) for cid in child_ids},
+    }
 
 
 @router.post("/verify-email", response_model=schemas.ParentRead)

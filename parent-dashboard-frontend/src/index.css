@@ -1,31 +1,91 @@
 @import "tailwindcss";
 
 /* =========================================================
-   Design tokens — retune the whole app from here.
-   Calm & warm: warm off-white ground, soft slate-green ink,
-   muted sage accent, warm clay used sparingly.
+   NovaPath — "Northlight"
+   Bone paper, deep pine, burnt persimmon. Fraunces on the
+   headings, Hanken Grotesk for everything else. Retune here.
    ========================================================= */
 @theme {
-  --color-canvas: #faf9f6;
-  --color-surface: #ffffff;
-  --color-surface-sunk: #f3f1ec;
+  --color-paper: #f4eee2;          /* app ground — warm bone */
+  --color-surface: #fffdf8;        /* cards */
+  --color-surface-sunk: #ece4d3;   /* inset fields, quiet fills */
 
-  --color-ink: #333f3a;
-  --color-ink-soft: #63706a;
-  --color-ink-faint: #97a09b;
+  --color-ink: #29231d;            /* warm near-black */
+  --color-ink-soft: #6b5d50;
+  --color-ink-faint: #a89a86;
 
-  --color-sage: #5b8a78;
-  --color-sage-dark: #446f5f;
-  --color-sage-soft: #ebf1ee;
+  --color-pine: #0f6b60;           /* primary accent */
+  --color-pine-dark: #0a5049;
+  --color-pine-soft: #dbeae5;      /* tint for chips / active nav */
 
-  --color-clay: #c07350;
-  --color-clay-soft: #f6ebe4;
+  --color-persimmon: #d35c3b;      /* warm second colour */
+  --color-persimmon-dark: #ad4522;
+  --color-persimmon-soft: #f6e2d8;
 
-  --color-line: #e9e5dd;
-  --color-line-strong: #dcd6ca;
+  --color-gold: #d9a23a;           /* mood / small highlights */
 
-  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
-    "Helvetica Neue", Arial, sans-serif;
+  --color-line: #e6dbc6;
+  --color-line-strong: #d9c9ac;
+
+  --font-sans: "Hanken Grotesk", ui-sans-serif, system-ui, -apple-system,
+    "Segoe UI", Roboto, sans-serif;
+  --font-display: "Fraunces", Georgia, "Times New Roman", serif;
+
+  --radius-card: 15px;
+  --shadow-card: 0 1px 2px rgba(41, 35, 29, 0.05),
+    0 20px 38px -18px rgba(41, 35, 29, 0.22);
+  --shadow-btn: 0 7px 16px -7px rgba(41, 35, 29, 0.32);
+  --shadow-lift: 0 2px 4px rgba(41, 35, 29, 0.06),
+    0 24px 44px -18px rgba(41, 35, 29, 0.28);
+}
+
+/* ---- dark: redefine only the tokens ---- */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --color-paper: #1b1813;
+    --color-surface: #221e18;
+    --color-surface-sunk: #2a251d;
+    --color-ink: #efe8d9;
+    --color-ink-soft: #b3a591;
+    --color-ink-faint: #7d7160;
+    --color-pine: #4aa89a;
+    --color-pine-dark: #5cb9ab;
+    --color-pine-soft: #1e332f;
+    --color-persimmon: #e5825f;
+    --color-persimmon-dark: #ef936f;
+    --color-persimmon-soft: #35281f;
+    --color-gold: #e0b45a;
+    --color-line: #352f24;
+    --color-line-strong: #423a2c;
+    --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.3),
+      0 20px 38px -18px rgba(0, 0, 0, 0.5);
+    --shadow-btn: 0 7px 16px -7px rgba(0, 0, 0, 0.5);
+    --shadow-lift: 0 2px 4px rgba(0, 0, 0, 0.35),
+      0 24px 44px -18px rgba(0, 0, 0, 0.55);
+  }
+}
+
+:root[data-theme="dark"] {
+  --color-paper: #1b1813;
+  --color-surface: #221e18;
+  --color-surface-sunk: #2a251d;
+  --color-ink: #efe8d9;
+  --color-ink-soft: #b3a591;
+  --color-ink-faint: #7d7160;
+  --color-pine: #4aa89a;
+  --color-pine-dark: #5cb9ab;
+  --color-pine-soft: #1e332f;
+  --color-persimmon: #e5825f;
+  --color-persimmon-dark: #ef936f;
+  --color-persimmon-soft: #35281f;
+  --color-gold: #e0b45a;
+  --color-line: #352f24;
+  --color-line-strong: #423a2c;
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.3),
+    0 20px 38px -18px rgba(0, 0, 0, 0.5);
+  --shadow-btn: 0 7px 16px -7px rgba(0, 0, 0, 0.5);
+  --shadow-lift: 0 2px 4px rgba(0, 0, 0, 0.35),
+    0 24px 44px -18px rgba(0, 0, 0, 0.55);
 }
 
 /* =========================================================
@@ -39,15 +99,31 @@ body,
 
 body {
   margin: 0;
-  background-color: var(--color-canvas);
+  background-color: var(--color-paper);
   color: var(--color-ink);
   font-family: var(--font-sans);
-  line-height: 1.5;
+  line-height: 1.55;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  color-scheme: light dark;
+}
+
+.font-display {
+  font-family: var(--font-display);
+  font-optical-sizing: auto;
+  letter-spacing: -0.01em;
 }
 
 *:focus-visible {
-  outline: 2px solid var(--color-sage);
+  outline: 2px solid var(--color-pine);
   outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
 }

@@ -41,8 +41,8 @@ export default function VerifyBanner() {
   };
 
   return (
-    <div className="border-b border-clay/30 bg-clay-soft">
-      <div className="mx-auto flex max-w-4xl items-center gap-3 px-5 py-2.5 text-sm text-clay sm:px-8">
+    <div className="border-b border-persimmon/30 bg-persimmon-soft">
+      <div className="mx-auto flex max-w-4xl items-center gap-3 px-5 py-2.5 text-sm text-persimmon sm:px-8">
         <MailWarning size={16} className="shrink-0" />
         <p className="flex-1">
           {status === "sent"

@@ -3,7 +3,7 @@ import VerifyBanner from "./VerifyBanner";
 
 export default function AppLayout({ children }) {
   return (
-    <div className="min-h-screen bg-canvas lg:flex">
+    <div className="min-h-screen bg-paper lg:flex">
       <Sidebar />
       <main className="flex-1">
         <VerifyBanner />

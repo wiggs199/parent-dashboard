@@ -34,7 +34,7 @@ export default function Login() {
       footer={
         <>
           Don't have an account?{" "}
-          <Link to="/signup" className="font-medium text-sage-dark hover:underline">
+          <Link to="/signup" className="font-medium text-pine-dark hover:underline">
             Sign up
           </Link>
         </>

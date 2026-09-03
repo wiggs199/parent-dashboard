@@ -63,14 +63,14 @@ export default function ExportView() {
     return (
       <div className="p-8">
         <p className="text-sm text-ink">Child not found.</p>
-        <Link to="/" className="text-sm text-sage-dark hover:underline">Back to dashboard</Link>
+        <Link to="/" className="text-sm text-pine-dark hover:underline">Back to dashboard</Link>
       </div>
     );
   if (state === "error")
     return (
       <div className="p-8">
-        <p className="text-sm text-clay">{error}</p>
-        <Link to="/" className="text-sm text-sage-dark hover:underline">Back to dashboard</Link>
+        <p className="text-sm text-persimmon">{error}</p>
+        <Link to="/" className="text-sm text-pine-dark hover:underline">Back to dashboard</Link>
       </div>
     );
 
@@ -120,7 +120,7 @@ export default function ExportView() {
           </label>
           <button
             onClick={() => window.print()}
-            className="inline-flex items-center gap-2 rounded-lg bg-sage px-4 py-2 text-sm font-medium text-surface hover:bg-sage-dark"
+            className="inline-flex items-center gap-2 rounded-lg bg-pine px-4 py-2 text-sm font-medium text-surface hover:bg-pine-dark"
           >
             <Printer size={15} /> Print / Save as PDF
           </button>

@@ -34,16 +34,16 @@ export default function VerifyEmail() {
       )}
       {state === "done" && (
         <div className="flex flex-col items-center gap-3 text-center">
-          <CheckCircle2 className="text-sage" size={32} />
+          <CheckCircle2 className="text-pine" size={32} />
           <p className="text-sm text-ink">Your email is confirmed.</p>
-          <Link to={back} className="text-sm font-medium text-sage-dark hover:underline">
+          <Link to={back} className="text-sm font-medium text-pine-dark hover:underline">
             {backLabel}
           </Link>
         </div>
       )}
       {state === "error" && (
         <div className="flex flex-col items-center gap-3 text-center">
-          <XCircle className="text-clay" size={32} />
+          <XCircle className="text-persimmon" size={32} />
           <p className="text-sm text-ink">
             This confirmation link is invalid or has expired.
           </p>
@@ -52,7 +52,7 @@ export default function VerifyEmail() {
               ? "You can send a new one from the banner on your dashboard."
               : "Sign in and we'll offer you a fresh link."}
           </p>
-          <Link to={back} className="text-sm font-medium text-sage-dark hover:underline">
+          <Link to={back} className="text-sm font-medium text-pine-dark hover:underline">
             {backLabel}
           </Link>
         </div>

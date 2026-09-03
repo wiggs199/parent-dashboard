@@ -3,6 +3,7 @@ import { useSearchParams } from "react-router-dom";
 import { NotebookPen } from "lucide-react";
 import PageHeader from "../components/PageHeader";
 import { Card, Select, Alert, EmptyState } from "../components/ui";
+import NovaMark from "../components/NovaMark";
 import LogForm from "../components/LogForm";
 import { logToForm } from "../lib/logForm";
 import { listChildren, listLogs, createLog, updateLog, deleteLog } from "../api/resources";
@@ -17,8 +18,10 @@ function TypeBadge({ type }) {
   const exploration = type === "exploration";
   return (
     <span
-      className={`rounded-full px-2 py-0.5 text-xs font-medium ${
-        exploration ? "bg-clay-soft text-clay" : "bg-sage-soft text-sage-dark"
+      className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
+        exploration
+          ? "bg-persimmon-soft text-persimmon-dark"
+          : "bg-pine-soft text-pine-dark"
       }`}
     >
       {type}
@@ -29,16 +32,19 @@ function TypeBadge({ type }) {
 function TimelineEntry({ log, onEdit, onDelete }) {
   return (
     <li className="group relative">
-      <span className="absolute -left-[1.6875rem] top-1.5 h-2.5 w-2.5 rounded-full border-2 border-canvas bg-sage" />
+      <NovaMark
+        size={13}
+        className="absolute -left-[1.72rem] top-1 bg-paper text-pine"
+      />
       <div className="flex flex-wrap items-center gap-2">
-        <span className="text-sm font-medium text-ink">{formatDate(log.date)}</span>
+        <span className="text-sm font-semibold text-ink">{formatDate(log.date)}</span>
         <TypeBadge type={log.type} />
         {log.mood_rating != null && (
           <span className="text-xs text-ink-faint">mood {log.mood_rating}/5</span>
         )}
         <span className="ml-auto flex gap-3 text-xs text-ink-faint opacity-0 transition-opacity focus-within:opacity-100 group-hover:opacity-100">
           <button onClick={onEdit} className="hover:text-ink">Edit</button>
-          <button onClick={onDelete} className="hover:text-clay">Delete</button>
+          <button onClick={onDelete} className="hover:text-persimmon-dark">Delete</button>
         </span>
       </div>
       {log.practiced_items && <p className="mt-1 text-sm text-ink">{log.practiced_items}</p>}
@@ -155,8 +161,8 @@ export default function Logs() {
         </EmptyState>
       ) : (
         <>
-          <Card className="mb-8 p-5">
-            <h2 className="mb-4 text-sm font-semibold text-ink">
+          <Card elevated className="mb-8 p-5">
+            <h2 className="mb-4 font-display text-lg font-semibold text-ink">
               New log{activeChild ? ` · ${activeChild.name}` : ""}
             </h2>
             <LogForm submitLabel="Add log" onSubmit={handleCreate} />
@@ -173,8 +179,8 @@ export default function Logs() {
               {logs.map((log) =>
                 editingId === log.id ? (
                   <li key={log.id} className="relative">
-                    <span className="absolute -left-[1.6875rem] top-1.5 h-2.5 w-2.5 rounded-full border-2 border-canvas bg-clay" />
-                    <Card className="p-4">
+                    <NovaMark size={13} className="absolute -left-[1.72rem] top-1 bg-paper text-persimmon" />
+                    <Card elevated className="p-4">
                       <LogForm
                         initial={logToForm(log)}
                         submitLabel="Save changes"

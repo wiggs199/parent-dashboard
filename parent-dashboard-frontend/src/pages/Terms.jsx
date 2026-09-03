@@ -70,7 +70,7 @@ export default function Terms() {
       <LegalSection heading="Contact">
         <p>
           Questions:{" "}
-          <a href={`mailto:${SITE.contactEmail}`} className="text-sage-dark hover:underline">
+          <a href={`mailto:${SITE.contactEmail}`} className="text-pine-dark hover:underline">
             {SITE.contactEmail}
           </a>
           .

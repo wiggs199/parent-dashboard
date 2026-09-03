@@ -5,19 +5,23 @@ import PageHeader from "../components/PageHeader";
 import { Card, Button, TextInput, Textarea, Field, Alert } from "../components/ui";
 import { getChild, updateChild, deleteChild } from "../api/resources";
 import { errorMessage } from "../api/client";
-import { FOCUS_AREAS, ageLabel } from "../lib/child";
+import { FOCUS_AREAS, ageLabel, focusColor } from "../lib/child";
 
 function Chip({ active, onClick, children }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className={`rounded-full border px-3 py-1 text-sm transition-colors ${
+      className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-sm transition-colors ${
         active
-          ? "border-sage bg-sage-soft text-sage-dark"
+          ? "border-pine bg-pine-soft text-pine-dark"
           : "border-line-strong text-ink-soft hover:border-ink-faint hover:text-ink"
       }`}
     >
+      <span
+        className="h-1.5 w-1.5 rounded-full"
+        style={{ background: active ? focusColor(children) : "currentColor" }}
+      />
       {children}
     </button>
   );
@@ -59,7 +63,7 @@ function ProfileForm({ child, onSave, onCancel }) {
   };
 
   return (
-    <Card className="p-5">
+    <Card elevated className="p-5">
       <form onSubmit={submit} className="space-y-5">
         {error && <Alert>{error}</Alert>}
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -186,7 +190,7 @@ function ChildProfileInner({ id }) {
     return (
       <div>
         <PageHeader title="Child not found" />
-        <Link to="/" className="text-sm font-medium text-sage-dark hover:underline">
+        <Link to="/" className="text-sm font-medium text-pine-dark hover:underline">
           Back to dashboard
         </Link>
       </div>
@@ -212,7 +216,7 @@ function ChildProfileInner({ id }) {
             <div className="flex gap-2">
               <Link
                 to={`/children/${child.id}/export`}
-                className="inline-flex items-center justify-center gap-2 rounded-lg border border-line-strong bg-surface px-4 py-2 text-sm font-medium text-ink transition-colors hover:bg-surface-sunk"
+                className="inline-flex items-center justify-center gap-2 rounded-xl border border-line-strong bg-surface px-4 py-2 text-sm font-semibold text-ink transition-colors hover:bg-surface-sunk"
               >
                 Export
               </Link>
@@ -234,27 +238,35 @@ function ChildProfileInner({ id }) {
         <ProfileForm child={child} onSave={handleSave} onCancel={() => setEditing(false)} />
       ) : (
         <div className="space-y-6">
-          <Card className="p-5">
-            <h2 className="text-sm font-semibold text-ink">Focus areas</h2>
+          <Card elevated className="p-5">
+            <h2 className="text-xs font-semibold uppercase tracking-[0.1em] text-ink-faint">
+              Focus areas
+            </h2>
             {child.focus_areas?.length ? (
-              <div className="mt-2 flex flex-wrap gap-2">
+              <div className="mt-3 flex flex-wrap gap-2">
                 {child.focus_areas.map((a) => (
                   <span
                     key={a}
-                    className="rounded-full bg-sage-soft px-3 py-1 text-sm text-sage-dark"
+                    className="inline-flex items-center gap-2 rounded-full bg-surface-sunk px-3 py-1 text-sm text-ink-soft"
                   >
+                    <span
+                      className="h-1.5 w-1.5 rounded-full"
+                      style={{ background: focusColor(a) }}
+                    />
                     {a}
                   </span>
                 ))}
               </div>
             ) : (
-              <p className="mt-2 text-sm text-ink-faint">
+              <p className="mt-3 text-sm text-ink-faint">
                 None set yet — add them from “Edit profile.”
               </p>
             )}
 
-            <h2 className="mt-5 text-sm font-semibold text-ink">Notes</h2>
-            <p className="mt-1 whitespace-pre-wrap text-sm text-ink-soft">
+            <h2 className="mt-6 text-xs font-semibold uppercase tracking-[0.1em] text-ink-faint">
+              Notes
+            </h2>
+            <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-ink-soft">
               {child.profile_notes || (
                 <span className="text-ink-faint">Nothing yet.</span>
               )}
@@ -264,23 +276,27 @@ function ChildProfileInner({ id }) {
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <Link
               to={`/logs?child=${child.id}`}
-              className="flex items-center gap-3 rounded-xl border border-line bg-surface p-4 text-ink transition-colors hover:border-line-strong hover:bg-surface-sunk"
+              className="group flex items-center gap-3 rounded-[var(--radius-card)] border border-line bg-surface p-4 text-ink shadow-[var(--shadow-card)] transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-[var(--shadow-lift)]"
             >
-              <NotebookPen size={18} className="text-sage" />
-              <span className="font-medium">Logs</span>
+              <span className="grid h-9 w-9 place-items-center rounded-xl bg-pine-soft text-pine">
+                <NotebookPen size={17} />
+              </span>
+              <span className="font-semibold">Logs</span>
             </Link>
             <Link
               to={`/documents?child=${child.id}`}
-              className="flex items-center gap-3 rounded-xl border border-line bg-surface p-4 text-ink transition-colors hover:border-line-strong hover:bg-surface-sunk"
+              className="group flex items-center gap-3 rounded-[var(--radius-card)] border border-line bg-surface p-4 text-ink shadow-[var(--shadow-card)] transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-[var(--shadow-lift)]"
             >
-              <FolderClosed size={18} className="text-sage" />
-              <span className="font-medium">Documents</span>
+              <span className="grid h-9 w-9 place-items-center rounded-xl bg-pine-soft text-pine">
+                <FolderClosed size={17} />
+              </span>
+              <span className="font-semibold">Documents</span>
             </Link>
           </div>
 
           <button
             onClick={handleDelete}
-            className="inline-flex items-center gap-1.5 text-sm text-ink-faint hover:text-clay"
+            className="inline-flex items-center gap-1.5 text-sm text-ink-faint hover:text-persimmon-dark"
           >
             <Trash2 size={14} /> Delete this child
           </button>

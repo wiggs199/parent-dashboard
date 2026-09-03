@@ -67,3 +67,33 @@ def test_delete_log(setup):
     assert client.delete(f"/logs/{log['id']}", headers=a).status_code == 204
     assert client.get(f"/logs/child/{child['id']}", headers=a).json() == []
     assert client.delete(f"/logs/{log['id']}", headers=a).status_code == 404  # already gone
+
+
+def test_dashboard_stats(setup):
+    from datetime import date, timedelta
+
+    client, a, b, child, _ = setup  # a has 1 child + 1 recent log
+    # a stale log (>7 days) must not count
+    client.post(
+        "/logs",
+        json={
+            "child_id": child["id"],
+            "date": (date.today() - timedelta(days=30)).isoformat(),
+            "type": "exercise",
+        },
+        headers=a,
+    )
+    # a fresh one that does
+    client.post(
+        "/logs",
+        json={"child_id": child["id"], "date": date.today().isoformat(), "type": "exercise"},
+        headers=a,
+    )
+    s = client.get("/auth/stats", headers=a).json()
+    assert s["children"] == 1
+    assert s["logs_this_week"] == 2  # the setup log + today's; not the 30-day-old one
+    assert s["per_child"][str(child["id"])] == 2
+
+    assert client.get("/auth/stats", headers=b).json() == {
+        "children": 0, "logs_this_week": 0, "documents": 0, "per_child": {}
+    }

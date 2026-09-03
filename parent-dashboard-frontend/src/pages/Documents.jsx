@@ -111,7 +111,7 @@ function DocRow({ doc, onRename, onDelete, onDownload }) {
           <button
             onClick={() => onDelete(doc)}
             aria-label={`Delete ${doc.filename}`}
-            className="rounded-md p-1.5 text-ink-faint hover:bg-clay-soft hover:text-clay"
+            className="rounded-md p-1.5 text-ink-faint hover:bg-persimmon-soft hover:text-persimmon"
           >
             <Trash2 size={16} />
           </button>
@@ -267,22 +267,22 @@ export default function Documents() {
           Add a child on the dashboard first.
         </EmptyState>
       ) : !hasBasics(activeChild) ? (
-        <Card className="p-6">
+        <Card elevated className="p-6">
           <p className="text-sm text-ink">
             Add {activeChild?.name}&rsquo;s birth year and at least one focus area
             before uploading documents.
           </p>
           <Link
             to={`/children/${childId}`}
-            className="mt-3 inline-block text-sm font-medium text-sage-dark hover:underline"
+            className="mt-3 inline-block text-sm font-medium text-pine-dark hover:underline"
           >
             Go to {activeChild?.name}&rsquo;s profile
           </Link>
         </Card>
       ) : (
         <>
-          <Card className="mb-8 p-5">
-            <h2 className="mb-4 text-sm font-semibold text-ink">
+          <Card elevated className="mb-8 p-5">
+            <h2 className="mb-4 font-display text-lg font-semibold text-ink">
               Upload{activeChild ? ` · ${activeChild.name}` : ""}
             </h2>
 
@@ -354,7 +354,7 @@ export default function Documents() {
               you want to keep with {activeChild?.name}.
             </EmptyState>
           ) : (
-            <Card className="divide-y divide-line">
+            <Card elevated className="divide-y divide-line">
               {docs.map((doc) => (
                 <DocRow
                   key={doc.id}
