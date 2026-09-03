@@ -25,18 +25,18 @@ def client(tmp_path):
             db.close()
 
     # keep uploaded test files out of the real uploads/ dir
-    from app.routes import documents as documents_route
+    from app import storage
 
     upload_dir = tmp_path / "uploads"
     upload_dir.mkdir()
-    monkeypatched = documents_route.UPLOAD_DIR
-    documents_route.UPLOAD_DIR = upload_dir
+    saved_local_dir = storage._LOCAL_DIR
+    storage._LOCAL_DIR = upload_dir
 
     app.dependency_overrides[get_db] = override_get_db
     with TestClient(app) as c:
         yield c
     app.dependency_overrides.clear()
-    documents_route.UPLOAD_DIR = monkeypatched
+    storage._LOCAL_DIR = saved_local_dir
 
 
 @pytest.fixture()

@@ -83,16 +83,23 @@ def test_logs_documents_tips_respect_child_ownership(client, auth_headers):
     assert client.get(f"/logs/child/{child_a['id']}", headers=b).status_code == 404
     assert client.get(f"/logs/summary/{child_a['id']}", headers=b).status_code == 404
 
+    # uploads need the child's basics filled in first
+    client.patch(
+        f"/children/{child_a['id']}",
+        json={"birth_year": 2018, "focus_areas": ["speech"]},
+        headers=a,
+    )
     up = client.post(
-        f"/documents?child_id={child_a['id']}&type=pdf",
+        "/documents",
+        data={"child_id": child_a["id"], "category": "school"},
         files={"file": ("../../evil.txt", io.BytesIO(b"hi"), "text/plain")},
         headers=a,
     )
     assert up.status_code == 201
-    stored = up.json()["filename"]
-    assert "/" not in stored and stored.endswith("_evil.txt")
+    assert up.json()["filename"] == "evil.txt"  # path stripped
     assert client.post(
-        f"/documents?child_id={child_a['id']}&type=pdf",
+        "/documents",
+        data={"child_id": child_a["id"], "category": "school"},
         files={"file": ("x.txt", io.BytesIO(b"hi"), "text/plain")},
         headers=b,
     ).status_code == 404

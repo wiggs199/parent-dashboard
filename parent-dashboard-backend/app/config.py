@@ -38,6 +38,15 @@ EMAIL_FROM = os.getenv("EMAIL_FROM", "NovaPath <onboarding@resend.dev>")
 VERIFY_TOKEN_EXPIRE_HOURS = int(os.getenv("VERIFY_TOKEN_EXPIRE_HOURS", "168"))  # 7 days
 RESET_TOKEN_EXPIRE_MINUTES = int(os.getenv("RESET_TOKEN_EXPIRE_MINUTES", "60"))
 
+# Document storage — Cloudflare R2 (S3-compatible). All four unset -> files
+# are stored in a local ./uploads folder (dev and tests).
+R2_ENDPOINT = os.getenv("R2_ENDPOINT", "")
+R2_ACCESS_KEY_ID = os.getenv("R2_ACCESS_KEY_ID", "")
+R2_SECRET_ACCESS_KEY = os.getenv("R2_SECRET_ACCESS_KEY", "")
+R2_BUCKET = os.getenv("R2_BUCKET", "")
+
+MAX_UPLOAD_BYTES = int(os.getenv("MAX_UPLOAD_BYTES", str(10 * 1024 * 1024)))  # 10 MB
+
 
 def _normalize_db_url(raw: str) -> str:
     """Accept the URL shapes hosts hand out and target the psycopg v3 driver.

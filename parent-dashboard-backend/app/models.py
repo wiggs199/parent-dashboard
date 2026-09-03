@@ -67,8 +67,12 @@ class Document(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     child_id = Column(Integer, ForeignKey("children.id"), nullable=False, index=True)
-    type = Column(String)        # e.g., "pdf", "image"
-    filename = Column(String)    # actual stored filename
+    category = Column(String, nullable=False, default="other")  # therapist|school|insurance|other
+    filename = Column(String, nullable=False)      # original name, for display + download
+    storage_key = Column(String, nullable=False)   # object key in the bucket (or local file)
+    content_type = Column(String, nullable=True)
+    size_bytes = Column(Integer, nullable=True)
+    uploaded_at = Column(DateTime, default=_utcnow)
 
     child = relationship("Child", back_populates="documents")
 

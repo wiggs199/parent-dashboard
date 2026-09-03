@@ -35,3 +35,17 @@ def get_owned_log_or_404(
     if not log:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Log not found")
     return log
+
+
+def get_owned_document_or_404(
+    doc_id: int, parent: models.Parent, db: Session
+) -> models.Document:
+    doc = (
+        db.query(models.Document)
+        .join(models.Child, models.Document.child_id == models.Child.id)
+        .filter(models.Document.id == doc_id, models.Child.parent_id == parent.id)
+        .first()
+    )
+    if not doc:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Document not found")
+    return doc

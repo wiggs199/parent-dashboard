@@ -34,5 +34,13 @@ services:
         sync: false                   # from resend.com; blank = emails logged not sent
       - key: EMAIL_FROM
         value: "NovaPath <onboarding@resend.dev>"
+      - key: R2_ENDPOINT
+        sync: false                   # https://<account-id>.r2.cloudflarestorage.com
+      - key: R2_ACCESS_KEY_ID
+        sync: false
+      - key: R2_SECRET_ACCESS_KEY
+        sync: false
+      - key: R2_BUCKET
+        sync: false                   # novapath-documents
       - key: ACCESS_TOKEN_EXPIRE_MINUTES
         value: "1440"

@@ -122,11 +122,17 @@ class LogEntryRead(LogEntryBase):
 # -----------------------------
 # Document Schemas
 # -----------------------------
+DocumentCategory = Literal["therapist", "school", "insurance", "other"]
+
+
 class DocumentRead(BaseModel):
     id: int
     child_id: int
-    type: str
+    category: DocumentCategory
     filename: str
+    content_type: Optional[str] = None
+    size_bytes: Optional[int] = None
+    uploaded_at: Optional[datetime] = None
 
     model_config = ConfigDict(from_attributes=True)
 
