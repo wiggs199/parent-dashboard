@@ -1,12 +1,13 @@
 from datetime import date, timedelta
 
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from app import mailer, models, schemas
 from app.database import get_db
+from app.ratelimit import limiter
 from app.security import (
     create_access_token,
     create_email_verification_token,
@@ -23,7 +24,9 @@ _LINK_DEAD = "This link is invalid or has expired."
 
 
 @router.post("/signup", response_model=schemas.Token, status_code=status.HTTP_201_CREATED)
+@limiter.limit("5/hour")
 def signup(
+    request: Request,
     payload: schemas.ParentSignup,
     background: BackgroundTasks,
     db: Session = Depends(get_db),
@@ -48,7 +51,9 @@ def signup(
 
 
 @router.post("/login", response_model=schemas.Token)
+@limiter.limit("10/minute;40/hour")
 def login(
+    request: Request,
     form_data: OAuth2PasswordRequestForm = Depends(),
     db: Session = Depends(get_db),
 ):
@@ -140,7 +145,9 @@ def resend_verification(
 
 
 @router.post("/forgot-password", response_model=schemas.MessageResponse)
+@limiter.limit("5/hour")
 def forgot_password(
+    request: Request,
     payload: schemas.ForgotPasswordInput,
     background: BackgroundTasks,
     db: Session = Depends(get_db),
@@ -156,7 +163,12 @@ def forgot_password(
 
 
 @router.post("/reset-password", response_model=schemas.Token)
-def reset_password(payload: schemas.ResetPasswordInput, db: Session = Depends(get_db)):
+@limiter.limit("10/hour")
+def reset_password(
+    request: Request,
+    payload: schemas.ResetPasswordInput,
+    db: Session = Depends(get_db),
+):
     parent_id = read_purpose_token(payload.token, "reset_password")
     parent = (
         db.query(models.Parent).filter(models.Parent.id == parent_id).first()

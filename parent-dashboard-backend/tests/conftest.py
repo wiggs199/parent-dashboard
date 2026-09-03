@@ -5,6 +5,17 @@ from sqlalchemy.orm import sessionmaker
 
 from app.database import Base, get_db
 from app.main import app
+from app.ratelimit import limiter
+
+
+@pytest.fixture(autouse=True)
+def _no_rate_limit():
+    """Rate limiting off by default so unrelated tests aren't throttled.
+    tests/test_ratelimit.py turns it back on for itself."""
+    limiter.enabled = False
+    limiter.reset()
+    yield
+    limiter.enabled = False
 
 
 @pytest.fixture()

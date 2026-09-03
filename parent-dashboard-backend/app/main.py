@@ -1,8 +1,11 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
 
 from app import auth
 from app.config import CORS_ORIGINS, assert_production_config
+from app.ratelimit import limiter
 from app.routes import children, documents, exploration_tips, logs
 
 # Refuse to start on an unsafe production configuration (dev secret / no DB).
@@ -12,6 +15,8 @@ assert_production_config()
 # the Render pre-deploy command). No create_all here.
 
 app = FastAPI(title="NovaPath API")
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 app.add_middleware(
     CORSMiddleware,

@@ -30,6 +30,8 @@ client.interceptors.response.use(
 
 // Pull a human-readable message out of an axios error for form display.
 export function errorMessage(error, fallback = "Something went wrong. Please try again.") {
+  if (error?.response?.status === 429)
+    return "Too many attempts. Wait a minute and try again.";
   const detail = error?.response?.data?.detail;
   if (typeof detail === "string") return detail;
   if (Array.isArray(detail) && detail[0]?.msg) return detail[0].msg;
