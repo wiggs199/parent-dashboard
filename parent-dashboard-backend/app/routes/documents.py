@@ -8,7 +8,7 @@ from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 
 from app import models, schemas, storage
-from app.config import MAX_UPLOAD_BYTES
+from app.config import ENV, MAX_UPLOAD_BYTES
 from app.database import get_db
 from app.deps import get_owned_child_or_404, get_owned_document_or_404
 from app.security import get_current_parent
@@ -37,6 +37,13 @@ def upload_document(
     db: Session = Depends(get_db),
     parent: models.Parent = Depends(get_current_parent),
 ):
+    # In production, never write uploads to the (ephemeral) local disk.
+    if ENV != "development" and not storage.using_r2():
+        raise HTTPException(
+            status_code=503,
+            detail="Document storage isn't set up yet. Please try again later.",
+        )
+
     child = get_owned_child_or_404(child_id, parent, db)
     _require_child_basics(child)
 
