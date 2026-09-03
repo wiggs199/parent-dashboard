@@ -32,6 +32,25 @@ export const deleteLog = (id) => client.delete(`/logs/${id}`);
 export const listDocuments = (childId) =>
   client.get(`/documents/child/${childId}`).then((r) => r.data);
 
-// Exploration tips
-export const listTips = (childId) =>
-  client.get(`/explorationtips/child/${childId}`).then((r) => r.data);
+export const uploadDocument = (childId, category, file) => {
+  const fd = new FormData();
+  fd.append("child_id", childId);
+  fd.append("category", category);
+  fd.append("file", file);
+  return client.post("/documents", fd).then((r) => r.data);
+};
+
+export const deleteDocument = (id) => client.delete(`/documents/${id}`);
+
+// Fetches the blob (auth header attached) and prompts the browser to save it.
+export async function downloadDocument(id, filename) {
+  const res = await client.get(`/documents/${id}/download`, { responseType: "blob" });
+  const url = URL.createObjectURL(res.data);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename || "document";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}

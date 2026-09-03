@@ -1,18 +1,233 @@
-import { FolderClosed } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useSearchParams, Link } from "react-router-dom";
+import { FolderClosed, Download, Trash2, Upload } from "lucide-react";
 import PageHeader from "../components/PageHeader";
-import { EmptyState } from "../components/ui";
+import { Card, Button, Select, Alert, EmptyState } from "../components/ui";
+import {
+  listChildren,
+  listDocuments,
+  uploadDocument,
+  deleteDocument,
+  downloadDocument,
+} from "../api/resources";
+import { errorMessage } from "../api/client";
+
+const CATEGORIES = [
+  ["therapist", "Therapist"],
+  ["school", "School / IEP"],
+  ["insurance", "Insurance"],
+  ["other", "Other"],
+];
+const CATEGORY_LABEL = Object.fromEntries(CATEGORIES);
+
+function fmtSize(bytes) {
+  if (bytes == null) return "";
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`;
+  return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
+}
+const fmtDate = (iso) =>
+  iso
+    ? new Date(iso).toLocaleDateString(undefined, {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      })
+    : "";
+
+const hasBasics = (child) =>
+  child && child.birth_year != null && child.focus_areas?.length > 0;
 
 export default function Documents() {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [children, setChildren] = useState([]);
+  const [childId, setChildId] = useState(null);
+  const [docs, setDocs] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [category, setCategory] = useState("therapist");
+  const [uploading, setUploading] = useState(false);
+  const fileRef = useRef(null);
+
+  useEffect(() => {
+    listChildren()
+      .then((data) => {
+        setChildren(data);
+        const wanted = Number(searchParams.get("child"));
+        setChildId(data.find((c) => c.id === wanted)?.id ?? data[0]?.id ?? null);
+      })
+      .catch((err) => setError(errorMessage(err)));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    if (!childId) return;
+    setLoading(true);
+    setError("");
+    setSearchParams({ child: String(childId) }, { replace: true });
+    listDocuments(childId)
+      .then(setDocs)
+      .catch((err) => setError(errorMessage(err)))
+      .finally(() => setLoading(false));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [childId]);
+
+  const activeChild = useMemo(
+    () => children.find((c) => c.id === childId),
+    [children, childId],
+  );
+
+  const handleUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file || !childId) return;
+    setUploading(true);
+    setError("");
+    try {
+      const doc = await uploadDocument(childId, category, file);
+      setDocs((prev) => [doc, ...prev]);
+    } catch (err) {
+      setError(errorMessage(err));
+    } finally {
+      setUploading(false);
+      if (fileRef.current) fileRef.current.value = "";
+    }
+  };
+
+  const handleDelete = async (doc) => {
+    if (!window.confirm(`Delete “${doc.filename}”? This can't be undone.`)) return;
+    setError("");
+    try {
+      await deleteDocument(doc.id);
+      setDocs((prev) => prev.filter((d) => d.id !== doc.id));
+    } catch (err) {
+      setError(errorMessage(err));
+    }
+  };
+
+  const handleDownload = async (doc) => {
+    setError("");
+    try {
+      await downloadDocument(doc.id, doc.filename);
+    } catch (err) {
+      setError(errorMessage(err));
+    }
+  };
+
+  const childPicker =
+    children.length > 0 ? (
+      <Select
+        value={childId ?? ""}
+        onChange={(e) => setChildId(Number(e.target.value))}
+        className="sm:w-48"
+      >
+        {children.map((c) => (
+          <option key={c.id} value={c.id}>{c.name}</option>
+        ))}
+      </Select>
+    ) : null;
+
   return (
     <div>
       <PageHeader
         title="Documents"
-        subtitle="Therapist, school, and insurance paperwork — kept together per child."
+        subtitle="Therapist, school, and insurance paperwork — kept per child."
+        action={childPicker}
       />
-      <EmptyState icon={FolderClosed} title="Document uploads are coming soon">
-        Soon you'll be able to attach files to a child and pull them up when a
-        school or insurer asks.
-      </EmptyState>
+
+      {error && (
+        <div className="mb-6">
+          <Alert>{error}</Alert>
+        </div>
+      )}
+
+      {children.length === 0 ? (
+        <EmptyState icon={FolderClosed} title="No children yet">
+          Add a child on the dashboard first.
+        </EmptyState>
+      ) : !hasBasics(activeChild) ? (
+        <Card className="p-6">
+          <p className="text-sm text-ink">
+            Add {activeChild?.name}&rsquo;s birth year and at least one focus area
+            before uploading documents.
+          </p>
+          <Link
+            to={`/children/${childId}`}
+            className="mt-3 inline-block text-sm font-medium text-sage-dark hover:underline"
+          >
+            Go to {activeChild?.name}&rsquo;s profile
+          </Link>
+        </Card>
+      ) : (
+        <>
+          <Card className="mb-8 p-5">
+            <h2 className="mb-4 text-sm font-semibold text-ink">
+              Upload{activeChild ? ` · ${activeChild.name}` : ""}
+            </h2>
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+              <Select
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                className="sm:w-44"
+              >
+                {CATEGORIES.map(([v, label]) => (
+                  <option key={v} value={v}>{label}</option>
+                ))}
+              </Select>
+              <input
+                ref={fileRef}
+                type="file"
+                onChange={handleUpload}
+                disabled={uploading}
+                className="hidden"
+              />
+              <Button type="button" onClick={() => fileRef.current?.click()} disabled={uploading}>
+                <Upload size={16} />
+                {uploading ? "Uploading…" : "Choose a file"}
+              </Button>
+              <span className="text-xs text-ink-faint">Up to 10 MB</span>
+            </div>
+          </Card>
+
+          {loading ? (
+            <p className="text-sm text-ink-soft">Loading…</p>
+          ) : docs.length === 0 ? (
+            <EmptyState icon={FolderClosed} title="No documents yet">
+              Upload the therapist reports, IEP paperwork, and insurance letters
+              you want to keep with {activeChild?.name}.
+            </EmptyState>
+          ) : (
+            <Card className="divide-y divide-line">
+              {docs.map((doc) => (
+                <div key={doc.id} className="flex items-center gap-3 p-4">
+                  <FolderClosed size={18} className="shrink-0 text-ink-faint" />
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-medium text-ink">{doc.filename}</p>
+                    <p className="text-xs text-ink-faint">
+                      {CATEGORY_LABEL[doc.category] || doc.category}
+                      {doc.size_bytes != null && ` · ${fmtSize(doc.size_bytes)}`}
+                      {doc.uploaded_at && ` · ${fmtDate(doc.uploaded_at)}`}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => handleDownload(doc)}
+                    aria-label={`Download ${doc.filename}`}
+                    className="rounded-md p-1.5 text-ink-faint hover:bg-surface-sunk hover:text-ink"
+                  >
+                    <Download size={16} />
+                  </button>
+                  <button
+                    onClick={() => handleDelete(doc)}
+                    aria-label={`Delete ${doc.filename}`}
+                    className="rounded-md p-1.5 text-ink-faint hover:bg-clay-soft hover:text-clay"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </div>
+              ))}
+            </Card>
+          )}
+        </>
+      )}
     </div>
   );
 }
