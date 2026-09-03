@@ -12,10 +12,11 @@ export const resetPassword = (token, newPassword) =>
 
 // Children
 export const listChildren = () => client.get("/children").then((r) => r.data);
+export const getChild = (id) => client.get(`/children/${id}`).then((r) => r.data);
 export const createChild = (name) =>
   client.post("/children", { name }).then((r) => r.data);
-export const updateChild = (id, name) =>
-  client.patch(`/children/${id}`, { name }).then((r) => r.data);
+export const updateChild = (id, patch) =>
+  client.patch(`/children/${id}`, patch).then((r) => r.data);
 export const deleteChild = (id) => client.delete(`/children/${id}`);
 
 // Logs

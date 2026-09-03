@@ -49,7 +49,8 @@ def update_child(
     parent: models.Parent = Depends(get_current_parent),
 ):
     child = get_owned_child_or_404(child_id, parent, db)
-    child.name = payload.name
+    for field, value in payload.model_dump(exclude_unset=True).items():
+        setattr(child, field, value)
     db.commit()
     db.refresh(child)
     return child

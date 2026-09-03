@@ -6,6 +6,7 @@ import { Card, Button, TextInput, Alert, EmptyState } from "../components/ui";
 import { listChildren, createChild, updateChild, deleteChild } from "../api/resources";
 import { errorMessage } from "../api/client";
 import { useAuth } from "../auth/AuthContext";
+import { ageLabel } from "../lib/child";
 
 function initials(name) {
   return name
@@ -26,7 +27,7 @@ function ChildCard({ child, onRename, onDelete }) {
     if (!trimmed || trimmed === child.name) return setEditing(false);
     setBusy(true);
     try {
-      await onRename(child.id, trimmed);
+      await onRename(child.id, { name: trimmed });
       setEditing(false);
     } finally {
       setBusy(false);
@@ -62,9 +63,11 @@ function ChildCard({ child, onRename, onDelete }) {
         </form>
       ) : (
         <>
-          <Link to={`/logs?child=${child.id}`} className="min-w-0 flex-1">
+          <Link to={`/children/${child.id}`} className="min-w-0 flex-1">
             <span className="block truncate font-medium text-ink">{child.name}</span>
-            <span className="text-sm text-ink-soft">View logs</span>
+            <span className="text-sm text-ink-soft">
+              {ageLabel(child.birth_year) || "Open profile"}
+            </span>
           </Link>
           <div className="flex items-center gap-1 text-ink-faint opacity-0 transition-opacity focus-within:opacity-100 group-hover:opacity-100">
             <button
@@ -82,7 +85,7 @@ function ChildCard({ child, onRename, onDelete }) {
               <Trash2 size={15} />
             </button>
           </div>
-          <Link to={`/logs?child=${child.id}`} aria-hidden className="text-ink-faint">
+          <Link to={`/children/${child.id}`} aria-hidden className="text-ink-faint">
             <ArrowRight size={18} />
           </Link>
         </>
@@ -127,10 +130,10 @@ export default function Dashboard() {
     }
   };
 
-  const handleRename = async (id, name) => {
+  const handleRename = async (id, patch) => {
     setError("");
     try {
-      const updated = await updateChild(id, name);
+      const updated = await updateChild(id, patch);
       setChildren((prev) => prev.map((c) => (c.id === id ? updated : c)));
     } catch (err) {
       setError(errorMessage(err));

@@ -1,9 +1,10 @@
 from datetime import date, datetime
-from typing import Literal, Optional
+from typing import List, Literal, Optional
 
-from pydantic import BaseModel, ConfigDict, EmailStr, Field
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
 
 LogType = Literal["exercise", "exploration"]
+CURRENT_YEAR = datetime.now().year
 
 
 # -----------------------------
@@ -58,11 +59,31 @@ class ChildCreate(ChildBase):
 
 
 class ChildUpdate(BaseModel):
-    name: str = Field(min_length=1, max_length=120)
+    """Partial update — only the fields sent are changed."""
+
+    name: Optional[str] = Field(default=None, min_length=1, max_length=120)
+    birth_year: Optional[int] = Field(default=None, ge=1990, le=CURRENT_YEAR)
+    focus_areas: Optional[List[str]] = Field(default=None, max_length=12)
+    profile_notes: Optional[str] = Field(default=None, max_length=4000)
+
+    @field_validator("focus_areas")
+    @classmethod
+    def _clean_focus_areas(cls, v):
+        if v is None:
+            return v
+        seen = []
+        for item in v:
+            s = str(item).strip()[:40]
+            if s and s not in seen:
+                seen.append(s)
+        return seen
 
 
 class ChildRead(ChildBase):
     id: int
+    birth_year: Optional[int] = None
+    focus_areas: List[str] = Field(default_factory=list)
+    profile_notes: Optional[str] = None
 
     model_config = ConfigDict(from_attributes=True)
 

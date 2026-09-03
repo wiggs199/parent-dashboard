@@ -1,4 +1,4 @@
-from sqlalchemy import Boolean, Column, Integer, String, Text, ForeignKey, DateTime, Date
+from sqlalchemy import Boolean, Column, Integer, String, Text, ForeignKey, DateTime, Date, JSON
 from sqlalchemy.orm import relationship
 from datetime import datetime, timezone
 from app.database import Base
@@ -29,6 +29,9 @@ class Child(Base):
     id = Column(Integer, primary_key=True, index=True)
     parent_id = Column(Integer, ForeignKey("parents.id"), nullable=False, index=True)
     name = Column(String, nullable=False)
+    birth_year = Column(Integer, nullable=True)
+    focus_areas = Column(JSON, nullable=False, default=list)  # list[str]
+    profile_notes = Column(Text, nullable=True)
 
     parent = relationship("Parent", back_populates="children")
     logs = relationship(
