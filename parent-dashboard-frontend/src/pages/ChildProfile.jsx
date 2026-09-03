@@ -209,6 +209,7 @@ function ChildProfileInner({ id }) {
       </Link>
 
       <PageHeader
+        plain
         title={child.name}
         subtitle={age || undefined}
         action={

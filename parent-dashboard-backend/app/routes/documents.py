@@ -1,6 +1,6 @@
 from pathlib import Path
 from typing import List, Optional
-from urllib.parse import quote
+from urllib.parse import quote, unquote
 import uuid
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
@@ -30,14 +30,16 @@ def _require_child_basics(child: models.Child) -> None:
 
 
 def _clean_name(name: str, fallback_ext_from: str = "") -> str:
-    """A safe, single-segment display name. Keeps an extension if there is
-    one, else borrows the extension from `fallback_ext_from`."""
-    name = Path(name.strip()).name or "document"
+    """A safe, single-segment display name. Decodes any percent-encoding a
+    browser applied to odd filename characters, drops surrounding quotes,
+    and keeps (or borrows) a file extension."""
+    name = unquote(name).replace('"', "").replace("'", "").strip()
+    name = Path(name).name or "document"
     if "." not in name and fallback_ext_from:
-        ext = Path(fallback_ext_from).suffix
+        ext = Path(unquote(fallback_ext_from)).suffix
         if ext:
             name = f"{name}{ext}"
-    return name[:200]
+    return name[:200] or "document"
 
 
 @router.post("", response_model=schemas.DocumentRead, status_code=201)

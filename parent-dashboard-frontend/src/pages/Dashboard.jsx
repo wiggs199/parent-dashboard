@@ -73,11 +73,11 @@ function ChildCard({ child, weekLogs, onRename, onDelete }) {
       className="group relative flex flex-col gap-3 p-4 transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-[var(--shadow-lift)]"
     >
       <div className="flex items-start gap-3">
-        <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-pine-soft font-display text-[15px] font-semibold text-pine-dark">
+        <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-pine-soft text-sm font-bold tracking-wide text-pine-dark">
           {initials(child.name)}
         </span>
         <Link to={`/children/${child.id}`} className="min-w-0 flex-1 pt-0.5">
-          <span className="block truncate font-display text-lg font-semibold text-ink">
+          <span className="block truncate text-lg font-semibold tracking-tight text-ink">
             {child.name}
           </span>
           <span className="text-xs text-ink-faint">
@@ -220,7 +220,7 @@ export default function Dashboard() {
 
   return (
     <div>
-      <PageHeader title={`Hi, ${firstName(parent)}`} subtitle={today} />
+      <PageHeader plain title={`Hi, ${firstName(parent)}`} subtitle={today} />
 
       {stats && (
         <div className="mb-7 flex flex-wrap gap-2">

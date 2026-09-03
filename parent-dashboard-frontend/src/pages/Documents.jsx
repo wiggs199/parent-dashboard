@@ -91,8 +91,12 @@ function DocRow({ doc, onRename, onDelete, onDownload }) {
             <p className="text-xs text-ink-faint">
               {CATEGORY_LABEL[doc.category] || doc.category}
               {doc.size_bytes != null && ` · ${fmtSize(doc.size_bytes)}`}
-              {doc.uploaded_at && ` · ${fmtDate(doc.uploaded_at)}`}
             </p>
+            {doc.uploaded_at && (
+              <p className="mt-0.5 text-xs text-ink-faint">
+                Uploaded {fmtDate(doc.uploaded_at)}
+              </p>
+            )}
           </div>
           <button
             onClick={() => setEditing(true)}
