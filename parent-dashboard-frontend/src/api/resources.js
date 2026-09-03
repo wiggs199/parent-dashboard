@@ -32,13 +32,17 @@ export const deleteLog = (id) => client.delete(`/logs/${id}`);
 export const listDocuments = (childId) =>
   client.get(`/documents/child/${childId}`).then((r) => r.data);
 
-export const uploadDocument = (childId, category, file) => {
+export const uploadDocument = (childId, category, file, displayName) => {
   const fd = new FormData();
   fd.append("child_id", childId);
   fd.append("category", category);
+  if (displayName) fd.append("display_name", displayName);
   fd.append("file", file);
   return client.post("/documents", fd).then((r) => r.data);
 };
+
+export const updateDocument = (id, patch) =>
+  client.patch(`/documents/${id}`, patch).then((r) => r.data);
 
 export const deleteDocument = (id) => client.delete(`/documents/${id}`);
 

@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import List
+from typing import List, Optional
 from urllib.parse import quote
 import uuid
 
@@ -29,10 +29,22 @@ def _require_child_basics(child: models.Child) -> None:
         )
 
 
+def _clean_name(name: str, fallback_ext_from: str = "") -> str:
+    """A safe, single-segment display name. Keeps an extension if there is
+    one, else borrows the extension from `fallback_ext_from`."""
+    name = Path(name.strip()).name or "document"
+    if "." not in name and fallback_ext_from:
+        ext = Path(fallback_ext_from).suffix
+        if ext:
+            name = f"{name}{ext}"
+    return name[:200]
+
+
 @router.post("", response_model=schemas.DocumentRead, status_code=201)
 def upload_document(
     child_id: int = Form(...),
     category: str = Form("other"),
+    display_name: Optional[str] = Form(None),
     file: UploadFile = File(...),
     db: Session = Depends(get_db),
     parent: models.Parent = Depends(get_current_parent),
@@ -61,13 +73,14 @@ def upload_document(
         raise HTTPException(status_code=413, detail=f"Files must be {mb} MB or smaller.")
 
     original_name = Path(file.filename or "upload").name
+    shown_name = _clean_name(display_name, original_name) if display_name else original_name
     key = f"child/{child_id}/{uuid.uuid4().hex}_{original_name}"
     storage.put(key, file.file, file.content_type)
 
     doc = models.Document(
         child_id=child_id,
         category=category,
-        filename=original_name,
+        filename=shown_name,
         storage_key=key,
         content_type=file.content_type,
         size_bytes=size,
@@ -93,6 +106,23 @@ def list_documents(
     )
 
 
+@router.patch("/{doc_id}", response_model=schemas.DocumentRead)
+def update_document(
+    doc_id: int,
+    payload: schemas.DocumentUpdate,
+    db: Session = Depends(get_db),
+    parent: models.Parent = Depends(get_current_parent),
+):
+    doc = get_owned_document_or_404(doc_id, parent, db)
+    if payload.filename is not None:
+        doc.filename = _clean_name(payload.filename, doc.storage_key)
+    if payload.category is not None:
+        doc.category = payload.category
+    db.commit()
+    db.refresh(doc)
+    return doc
+
+
 @router.get("/{doc_id}/download")
 def download_document(
     doc_id: int,
@@ -100,7 +130,8 @@ def download_document(
     parent: models.Parent = Depends(get_current_parent),
 ):
     doc = get_owned_document_or_404(doc_id, parent, db)
-    disposition = f"attachment; filename*=UTF-8''{quote(doc.filename)}"
+    name = _clean_name(doc.filename, doc.storage_key)
+    disposition = f"attachment; filename*=UTF-8''{quote(name)}"
     return StreamingResponse(
         storage.open_stream(doc.storage_key),
         media_type=doc.content_type or "application/octet-stream",

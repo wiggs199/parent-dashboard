@@ -83,3 +83,36 @@ def test_deleting_child_removes_its_documents(ready_child):
     assert client.delete(f"/children/{c['id']}", headers=a).status_code == 204
     # child gone -> its document listing 404s
     assert client.get(f"/documents/child/{c['id']}", headers=a).status_code == 404
+
+
+def test_name_on_upload_and_rename_later(ready_child):
+    client, a, c = ready_child
+
+    # name given at upload time
+    doc = client.post(
+        "/documents",
+        data={"child_id": c["id"], "category": "school", "display_name": "IEP draft"},
+        files={"file": ("messy_scan_final(2).pdf", io.BytesIO(b"%PDF x"), "application/pdf")},
+        headers=a,
+    ).json()
+    assert doc["filename"] == "IEP draft.pdf"  # extension borrowed from the real file
+
+    # rename afterwards
+    r = client.patch(f"/documents/{doc['id']}", json={"filename": "IEP - final"}, headers=a)
+    assert r.status_code == 200 and r.json()["filename"] == "IEP - final.pdf"
+
+    # download uses the display name, extension intact
+    dl = client.get(f"/documents/{doc['id']}/download", headers=a)
+    assert "IEP%20-%20final.pdf" in dl.headers["content-disposition"]
+
+    # recategorise
+    assert client.patch(
+        f"/documents/{doc['id']}", json={"category": "insurance"}, headers=a
+    ).json()["category"] == "insurance"
+
+
+def test_rename_respects_ownership(ready_child, auth_headers):
+    client, a, c = ready_child
+    b = auth_headers(email="b@example.com")
+    doc = upload(client, a, c["id"]).json()
+    assert client.patch(f"/documents/{doc['id']}", json={"filename": "x"}, headers=b).status_code == 404

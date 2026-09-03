@@ -1,13 +1,14 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams, Link } from "react-router-dom";
-import { FolderClosed, Download, Trash2, Upload } from "lucide-react";
+import { FolderClosed, Download, Trash2, Upload, Pencil } from "lucide-react";
 import PageHeader from "../components/PageHeader";
-import { Card, Button, Select, Alert, EmptyState, Field } from "../components/ui";
+import { Card, Button, Select, TextInput, Alert, EmptyState, Field } from "../components/ui";
 import FilePreview from "../components/FilePreview";
 import {
   listChildren,
   listDocuments,
   uploadDocument,
+  updateDocument,
   deleteDocument,
   downloadDocument,
 } from "../api/resources";
@@ -41,6 +42,85 @@ const fmtDate = (iso) =>
 const hasBasics = (child) =>
   child && child.birth_year != null && child.focus_areas?.length > 0;
 
+function DocRow({ doc, onRename, onDelete, onDownload }) {
+  const [editing, setEditing] = useState(false);
+  const [name, setName] = useState(doc.filename);
+  const [busy, setBusy] = useState(false);
+
+  const save = async (e) => {
+    e.preventDefault();
+    const trimmed = name.trim();
+    if (!trimmed || trimmed === doc.filename) return setEditing(false);
+    setBusy(true);
+    try {
+      await onRename(doc.id, trimmed);
+      setEditing(false);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div className="flex items-center gap-3 p-4">
+      <FolderClosed size={18} className="shrink-0 text-ink-faint" />
+      {editing ? (
+        <form onSubmit={save} className="flex flex-1 items-center gap-2">
+          <TextInput
+            autoFocus
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            className="flex-1"
+          />
+          <Button type="submit" disabled={busy} className="px-3 py-1.5">Save</Button>
+          <Button
+            type="button"
+            variant="ghost"
+            className="px-2 py-1.5"
+            onClick={() => {
+              setName(doc.filename);
+              setEditing(false);
+            }}
+          >
+            Cancel
+          </Button>
+        </form>
+      ) : (
+        <>
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm font-medium text-ink">{doc.filename}</p>
+            <p className="text-xs text-ink-faint">
+              {CATEGORY_LABEL[doc.category] || doc.category}
+              {doc.size_bytes != null && ` · ${fmtSize(doc.size_bytes)}`}
+              {doc.uploaded_at && ` · ${fmtDate(doc.uploaded_at)}`}
+            </p>
+          </div>
+          <button
+            onClick={() => setEditing(true)}
+            aria-label={`Rename ${doc.filename}`}
+            className="rounded-md p-1.5 text-ink-faint hover:bg-surface-sunk hover:text-ink"
+          >
+            <Pencil size={15} />
+          </button>
+          <button
+            onClick={() => onDownload(doc)}
+            aria-label={`Download ${doc.filename}`}
+            className="rounded-md p-1.5 text-ink-faint hover:bg-surface-sunk hover:text-ink"
+          >
+            <Download size={16} />
+          </button>
+          <button
+            onClick={() => onDelete(doc)}
+            aria-label={`Delete ${doc.filename}`}
+            className="rounded-md p-1.5 text-ink-faint hover:bg-clay-soft hover:text-clay"
+          >
+            <Trash2 size={16} />
+          </button>
+        </>
+      )}
+    </div>
+  );
+}
+
 export default function Documents() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [children, setChildren] = useState([]);
@@ -51,6 +131,7 @@ export default function Documents() {
   const [category, setCategory] = useState("therapist");
   const [uploading, setUploading] = useState(false);
   const [pending, setPending] = useState(null); // File chosen but not yet uploaded
+  const [pendingName, setPendingName] = useState("");
   const [previewUrl, setPreviewUrl] = useState("");
   const fileRef = useRef(null);
 
@@ -100,18 +181,22 @@ export default function Documents() {
     if (file.size === 0) return setError("That file is empty.");
     if (file.size > MAX_BYTES) return setError("Files must be 10 MB or smaller.");
     setPending(file);
+    setPendingName(file.name);
   };
 
-  const clearPending = () => setPending(null);
+  const clearPending = () => {
+    setPending(null);
+    setPendingName("");
+  };
 
   const handleUpload = async () => {
     if (!pending || !childId) return;
     setUploading(true);
     setError("");
     try {
-      const doc = await uploadDocument(childId, category, pending);
+      const doc = await uploadDocument(childId, category, pending, pendingName.trim());
       setDocs((prev) => [doc, ...prev]);
-      setPending(null);
+      clearPending();
     } catch (err) {
       setError(errorMessage(err));
     } finally {
@@ -136,6 +221,17 @@ export default function Documents() {
       await downloadDocument(doc.id, doc.filename);
     } catch (err) {
       setError(errorMessage(err));
+    }
+  };
+
+  const handleRename = async (id, filename) => {
+    setError("");
+    try {
+      const updated = await updateDocument(id, { filename });
+      setDocs((prev) => prev.map((d) => (d.id === id ? updated : d)));
+    } catch (err) {
+      setError(errorMessage(err));
+      throw err;
     }
   };
 
@@ -210,17 +306,21 @@ export default function Documents() {
             ) : (
               <div className="space-y-4">
                 <FilePreview file={pending} url={previewUrl} />
-                <Field label="Category">
-                  <Select
-                    value={category}
-                    onChange={(e) => setCategory(e.target.value)}
-                    className="sm:w-52"
-                  >
-                    {CATEGORIES.map(([v, label]) => (
-                      <option key={v} value={v}>{label}</option>
-                    ))}
-                  </Select>
-                </Field>
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <Field label="Name" hint="How it shows in the list">
+                    <TextInput
+                      value={pendingName}
+                      onChange={(e) => setPendingName(e.target.value)}
+                    />
+                  </Field>
+                  <Field label="Category">
+                    <Select value={category} onChange={(e) => setCategory(e.target.value)}>
+                      {CATEGORIES.map(([v, label]) => (
+                        <option key={v} value={v}>{label}</option>
+                      ))}
+                    </Select>
+                  </Field>
+                </div>
                 <div className="flex flex-wrap gap-2">
                   <Button type="button" onClick={handleUpload} disabled={uploading}>
                     {uploading ? "Uploading…" : "Upload this file"}
@@ -256,31 +356,13 @@ export default function Documents() {
           ) : (
             <Card className="divide-y divide-line">
               {docs.map((doc) => (
-                <div key={doc.id} className="flex items-center gap-3 p-4">
-                  <FolderClosed size={18} className="shrink-0 text-ink-faint" />
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium text-ink">{doc.filename}</p>
-                    <p className="text-xs text-ink-faint">
-                      {CATEGORY_LABEL[doc.category] || doc.category}
-                      {doc.size_bytes != null && ` · ${fmtSize(doc.size_bytes)}`}
-                      {doc.uploaded_at && ` · ${fmtDate(doc.uploaded_at)}`}
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => handleDownload(doc)}
-                    aria-label={`Download ${doc.filename}`}
-                    className="rounded-md p-1.5 text-ink-faint hover:bg-surface-sunk hover:text-ink"
-                  >
-                    <Download size={16} />
-                  </button>
-                  <button
-                    onClick={() => handleDelete(doc)}
-                    aria-label={`Delete ${doc.filename}`}
-                    className="rounded-md p-1.5 text-ink-faint hover:bg-clay-soft hover:text-clay"
-                  >
-                    <Trash2 size={16} />
-                  </button>
-                </div>
+                <DocRow
+                  key={doc.id}
+                  doc={doc}
+                  onRename={handleRename}
+                  onDelete={handleDelete}
+                  onDownload={handleDownload}
+                />
               ))}
             </Card>
           )}
