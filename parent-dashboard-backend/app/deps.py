@@ -20,3 +20,18 @@ def get_owned_child_or_404(
     if not child:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Child not found")
     return child
+
+
+def get_owned_log_or_404(
+    log_id: int, parent: models.Parent, db: Session
+) -> models.LogEntry:
+    """Return the log only if it belongs to one of this parent's children."""
+    log = (
+        db.query(models.LogEntry)
+        .join(models.Child, models.LogEntry.child_id == models.Child.id)
+        .filter(models.LogEntry.id == log_id, models.Child.parent_id == parent.id)
+        .first()
+    )
+    if not log:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Log not found")
+    return log

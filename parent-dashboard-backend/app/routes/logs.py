@@ -1,11 +1,11 @@
 from typing import List
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Response
 from sqlalchemy.orm import Session
 
 from app import models, schemas
 from app.database import get_db
-from app.deps import get_owned_child_or_404
+from app.deps import get_owned_child_or_404, get_owned_log_or_404
 from app.security import get_current_parent
 
 router = APIRouter()
@@ -39,6 +39,33 @@ def get_logs(
         .order_by(models.LogEntry.date.desc(), models.LogEntry.id.desc())
         .all()
     )
+
+
+@router.patch("/{log_id}", response_model=schemas.LogEntryRead)
+def update_log(
+    log_id: int,
+    payload: schemas.LogEntryUpdate,
+    db: Session = Depends(get_db),
+    parent: models.Parent = Depends(get_current_parent),
+):
+    log = get_owned_log_or_404(log_id, parent, db)
+    for field, value in payload.model_dump(exclude_unset=True).items():
+        setattr(log, field, value)
+    db.commit()
+    db.refresh(log)
+    return log
+
+
+@router.delete("/{log_id}", status_code=204)
+def delete_log(
+    log_id: int,
+    db: Session = Depends(get_db),
+    parent: models.Parent = Depends(get_current_parent),
+):
+    log = get_owned_log_or_404(log_id, parent, db)
+    db.delete(log)
+    db.commit()
+    return Response(status_code=204)
 
 
 @router.get("/summary/{child_id}")

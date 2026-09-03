@@ -57,6 +57,10 @@ class ChildCreate(ChildBase):
     pass
 
 
+class ChildUpdate(BaseModel):
+    name: str = Field(min_length=1, max_length=120)
+
+
 class ChildRead(ChildBase):
     id: int
 
@@ -77,6 +81,15 @@ class LogEntryBase(BaseModel):
 
 class LogEntryCreate(LogEntryBase):
     pass
+
+
+class LogEntryUpdate(BaseModel):
+    # partial update — child_id is fixed once created
+    date: Optional[date] = None
+    type: Optional[LogType] = None
+    practiced_items: Optional[str] = None
+    mood_rating: Optional[int] = Field(default=None, ge=1, le=5)
+    notes: Optional[str] = None
 
 
 class LogEntryRead(LogEntryBase):

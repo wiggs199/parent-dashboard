@@ -14,12 +14,18 @@ export const resetPassword = (token, newPassword) =>
 export const listChildren = () => client.get("/children").then((r) => r.data);
 export const createChild = (name) =>
   client.post("/children", { name }).then((r) => r.data);
+export const updateChild = (id, name) =>
+  client.patch(`/children/${id}`, { name }).then((r) => r.data);
+export const deleteChild = (id) => client.delete(`/children/${id}`);
 
 // Logs
 export const listLogs = (childId) =>
   client.get(`/logs/child/${childId}`).then((r) => r.data);
 export const createLog = (payload) =>
   client.post("/logs", payload).then((r) => r.data);
+export const updateLog = (id, payload) =>
+  client.patch(`/logs/${id}`, payload).then((r) => r.data);
+export const deleteLog = (id) => client.delete(`/logs/${id}`);
 
 // Documents
 export const listDocuments = (childId) =>

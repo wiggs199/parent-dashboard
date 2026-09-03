@@ -1,6 +1,6 @@
 from typing import List
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Response
 from sqlalchemy.orm import Session
 
 from app import models, schemas
@@ -39,3 +39,29 @@ def get_child(
     parent: models.Parent = Depends(get_current_parent),
 ):
     return get_owned_child_or_404(child_id, parent, db)
+
+
+@router.patch("/{child_id}", response_model=schemas.ChildRead)
+def update_child(
+    child_id: int,
+    payload: schemas.ChildUpdate,
+    db: Session = Depends(get_db),
+    parent: models.Parent = Depends(get_current_parent),
+):
+    child = get_owned_child_or_404(child_id, parent, db)
+    child.name = payload.name
+    db.commit()
+    db.refresh(child)
+    return child
+
+
+@router.delete("/{child_id}", status_code=204)
+def delete_child(
+    child_id: int,
+    db: Session = Depends(get_db),
+    parent: models.Parent = Depends(get_current_parent),
+):
+    child = get_owned_child_or_404(child_id, parent, db)
+    db.delete(child)  # cascades to logs, documents, tips
+    db.commit()
+    return Response(status_code=204)
