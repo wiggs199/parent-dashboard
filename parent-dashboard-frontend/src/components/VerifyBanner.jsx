@@ -2,6 +2,7 @@ import { useState } from "react";
 import { MailWarning, X } from "lucide-react";
 import { useAuth } from "../auth/AuthContext";
 import { resendVerification } from "../api/resources";
+import { EMAIL_ENABLED } from "../lib/features";
 
 const DISMISS_KEY = "pd_verify_banner_dismissed";
 
@@ -18,7 +19,7 @@ export default function VerifyBanner() {
   const [hidden, setHidden] = useState(dismissed);
   const [status, setStatus] = useState("idle"); // idle | sending | sent | error
 
-  if (!parent || parent.email_verified || hidden) return null;
+  if (!EMAIL_ENABLED || !parent || parent.email_verified || hidden) return null;
 
   const hide = () => {
     try {

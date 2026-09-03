@@ -2,7 +2,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams, Link } from "react-router-dom";
 import { FolderClosed, Download, Trash2, Upload } from "lucide-react";
 import PageHeader from "../components/PageHeader";
-import { Card, Button, Select, Alert, EmptyState } from "../components/ui";
+import { Card, Button, Select, Alert, EmptyState, Field } from "../components/ui";
+import FilePreview from "../components/FilePreview";
 import {
   listChildren,
   listDocuments,
@@ -11,6 +12,8 @@ import {
   downloadDocument,
 } from "../api/resources";
 import { errorMessage } from "../api/client";
+
+const MAX_BYTES = 10 * 1024 * 1024;
 
 const CATEGORIES = [
   ["therapist", "Therapist"],
@@ -47,7 +50,19 @@ export default function Documents() {
   const [error, setError] = useState("");
   const [category, setCategory] = useState("therapist");
   const [uploading, setUploading] = useState(false);
+  const [pending, setPending] = useState(null); // File chosen but not yet uploaded
+  const [previewUrl, setPreviewUrl] = useState("");
   const fileRef = useRef(null);
+
+  useEffect(() => {
+    if (!pending) {
+      setPreviewUrl("");
+      return;
+    }
+    const url = URL.createObjectURL(pending);
+    setPreviewUrl(url);
+    return () => URL.revokeObjectURL(url);
+  }, [pending]);
 
   useEffect(() => {
     listChildren()
@@ -77,19 +92,30 @@ export default function Documents() {
     [children, childId],
   );
 
-  const handleUpload = async (e) => {
+  const pickFile = (e) => {
     const file = e.target.files?.[0];
-    if (!file || !childId) return;
+    if (fileRef.current) fileRef.current.value = "";
+    if (!file) return;
+    setError("");
+    if (file.size === 0) return setError("That file is empty.");
+    if (file.size > MAX_BYTES) return setError("Files must be 10 MB or smaller.");
+    setPending(file);
+  };
+
+  const clearPending = () => setPending(null);
+
+  const handleUpload = async () => {
+    if (!pending || !childId) return;
     setUploading(true);
     setError("");
     try {
-      const doc = await uploadDocument(childId, category, file);
+      const doc = await uploadDocument(childId, category, pending);
       setDocs((prev) => [doc, ...prev]);
+      setPending(null);
     } catch (err) {
       setError(errorMessage(err));
     } finally {
       setUploading(false);
-      if (fileRef.current) fileRef.current.value = "";
     }
   };
 
@@ -163,29 +189,61 @@ export default function Documents() {
             <h2 className="mb-4 text-sm font-semibold text-ink">
               Upload{activeChild ? ` · ${activeChild.name}` : ""}
             </h2>
-            <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-              <Select
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-                className="sm:w-44"
-              >
-                {CATEGORIES.map(([v, label]) => (
-                  <option key={v} value={v}>{label}</option>
-                ))}
-              </Select>
-              <input
-                ref={fileRef}
-                type="file"
-                onChange={handleUpload}
-                disabled={uploading}
-                className="hidden"
-              />
-              <Button type="button" onClick={() => fileRef.current?.click()} disabled={uploading}>
-                <Upload size={16} />
-                {uploading ? "Uploading…" : "Choose a file"}
-              </Button>
-              <span className="text-xs text-ink-faint">Up to 10 MB</span>
-            </div>
+
+            <input
+              ref={fileRef}
+              type="file"
+              onChange={pickFile}
+              className="hidden"
+            />
+
+            {!pending ? (
+              <div className="flex items-center gap-3">
+                <Button type="button" onClick={() => fileRef.current?.click()}>
+                  <Upload size={16} />
+                  Choose a file
+                </Button>
+                <span className="text-xs text-ink-faint">
+                  PDF, image, or document · up to 10 MB
+                </span>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <FilePreview file={pending} url={previewUrl} />
+                <Field label="Category">
+                  <Select
+                    value={category}
+                    onChange={(e) => setCategory(e.target.value)}
+                    className="sm:w-52"
+                  >
+                    {CATEGORIES.map(([v, label]) => (
+                      <option key={v} value={v}>{label}</option>
+                    ))}
+                  </Select>
+                </Field>
+                <div className="flex flex-wrap gap-2">
+                  <Button type="button" onClick={handleUpload} disabled={uploading}>
+                    {uploading ? "Uploading…" : "Upload this file"}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    onClick={() => fileRef.current?.click()}
+                    disabled={uploading}
+                  >
+                    Choose a different file
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    onClick={clearPending}
+                    disabled={uploading}
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+            )}
           </Card>
 
           {loading ? (

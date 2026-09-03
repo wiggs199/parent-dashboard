@@ -4,6 +4,8 @@ import { forgotPassword } from "../api/resources";
 import { errorMessage } from "../api/client";
 import AuthShell from "../components/AuthShell";
 import { Button, TextInput, Field, Alert } from "../components/ui";
+import { EMAIL_ENABLED } from "../lib/features";
+import { SITE } from "../siteConfig";
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState("");
@@ -28,7 +30,7 @@ export default function ForgotPassword() {
   return (
     <AuthShell
       title="Reset your password"
-      subtitle={sent ? undefined : "We'll email you a link"}
+      subtitle={!EMAIL_ENABLED || sent ? undefined : "We'll email you a link"}
       footer={
         <>
           Remembered it?{" "}
@@ -38,7 +40,19 @@ export default function ForgotPassword() {
         </>
       }
     >
-      {sent ? (
+      {!EMAIL_ENABLED ? (
+        <p className="text-sm text-ink-soft">
+          Self-serve password reset isn't available during this early trial.
+          Email{" "}
+          <a
+            href={`mailto:${SITE.contactEmail}?subject=${encodeURIComponent("Password reset")}`}
+            className="font-medium text-sage-dark hover:underline"
+          >
+            {SITE.contactEmail}
+          </a>{" "}
+          and we'll get you back in.
+        </p>
+      ) : sent ? (
         <p className="text-sm text-ink-soft">
           If that email has an account, a reset link is on its way. It expires in
           about an hour — check your spam folder if you don't see it.
