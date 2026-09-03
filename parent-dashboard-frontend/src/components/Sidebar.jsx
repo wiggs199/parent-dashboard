@@ -17,7 +17,7 @@ const NAV = [
   { to: "/", label: "Dashboard", Icon: LayoutDashboard, end: true },
   { to: "/logs", label: "Logs", Icon: NotebookPen },
   { to: "/documents", label: "Documents", Icon: FolderClosed },
-  { to: "/ai-summary", label: "AI Insights", Icon: Sparkles },
+  // AI Insights is hidden until it's built.
 ];
 
 function navLinkClass({ isActive }) {

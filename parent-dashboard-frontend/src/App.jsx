@@ -6,6 +6,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 
 import Dashboard from "./pages/Dashboard";
 import ChildProfile from "./pages/ChildProfile";
+import ExportView from "./pages/ExportView";
 import Logs from "./pages/Logs";
 import Documents from "./pages/Documents";
 import AISummary from "./pages/AISummary";
@@ -40,6 +41,14 @@ export default function App() {
 
           <Route path="/" element={<Protected><Dashboard /></Protected>} />
           <Route path="/children/:id" element={<Protected><ChildProfile /></Protected>} />
+          <Route
+            path="/children/:id/export"
+            element={
+              <ProtectedRoute>
+                <ExportView />
+              </ProtectedRoute>
+            }
+          />
           <Route path="/logs" element={<Protected><Logs /></Protected>} />
           <Route path="/documents" element={<Protected><Documents /></Protected>} />
           <Route path="/ai-summary" element={<Protected><AISummary /></Protected>} />

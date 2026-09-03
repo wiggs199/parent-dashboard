@@ -209,9 +209,17 @@ function ChildProfileInner({ id }) {
         subtitle={age || undefined}
         action={
           !editing && (
-            <Button variant="outline" onClick={() => setEditing(true)}>
-              Edit profile
-            </Button>
+            <div className="flex gap-2">
+              <Link
+                to={`/children/${child.id}/export`}
+                className="inline-flex items-center justify-center gap-2 rounded-lg border border-line-strong bg-surface px-4 py-2 text-sm font-medium text-ink transition-colors hover:bg-surface-sunk"
+              >
+                Export
+              </Link>
+              <Button variant="outline" onClick={() => setEditing(true)}>
+                Edit profile
+              </Button>
+            </div>
           )
         }
       />
