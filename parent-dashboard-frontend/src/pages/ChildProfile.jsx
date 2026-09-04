@@ -5,9 +5,9 @@ import PageHeader from "../components/PageHeader";
 import { Card, Button, TextInput, Textarea, Field, Alert } from "../components/ui";
 import { getChild, updateChild, deleteChild } from "../api/resources";
 import { errorMessage } from "../api/client";
-import { FOCUS_AREAS, ageLabel, focusColor } from "../lib/child";
+import { FOCUS_AREAS, ageLabel, focusColor, focusIcon } from "../lib/child";
 
-function Chip({ active, onClick, children }) {
+function Chip({ active, onClick, Icon, children }) {
   return (
     <button
       type="button"
@@ -18,9 +18,10 @@ function Chip({ active, onClick, children }) {
           : "border-line-strong text-ink-soft hover:border-ink-faint hover:text-ink"
       }`}
     >
-      <span
-        className="h-1.5 w-1.5 rounded-full"
-        style={{ background: active ? focusColor(children) : "currentColor" }}
+      <Icon
+        size={14}
+        strokeWidth={2}
+        style={{ color: active ? focusColor(children) : "currentColor" }}
       />
       {children}
     </button>
@@ -86,7 +87,7 @@ function ProfileForm({ child, onSave, onCancel }) {
           <span className="mb-1.5 block text-sm font-medium text-ink">Focus areas</span>
           <div className="flex flex-wrap gap-2">
             {options.map((a) => (
-              <Chip key={a} active={areas.includes(a)} onClick={() => toggle(a)}>
+              <Chip key={a} active={areas.includes(a)} onClick={() => toggle(a)} Icon={focusIcon(a)}>
                 {a}
               </Chip>
             ))}
@@ -245,18 +246,18 @@ function ChildProfileInner({ id }) {
             </h2>
             {child.focus_areas?.length ? (
               <div className="mt-3 flex flex-wrap gap-2">
-                {child.focus_areas.map((a) => (
-                  <span
-                    key={a}
-                    className="inline-flex items-center gap-2 rounded-full bg-surface-sunk px-3 py-1 text-sm text-ink-soft"
-                  >
+                {child.focus_areas.map((a) => {
+                  const Icon = focusIcon(a);
+                  return (
                     <span
-                      className="h-1.5 w-1.5 rounded-full"
-                      style={{ background: focusColor(a) }}
-                    />
-                    {a}
-                  </span>
-                ))}
+                      key={a}
+                      className="inline-flex items-center gap-2 rounded-full bg-surface-sunk px-3 py-1 text-sm text-ink-soft"
+                    >
+                      <Icon size={14} strokeWidth={2} style={{ color: focusColor(a) }} />
+                      {a}
+                    </span>
+                  );
+                })}
               </div>
             ) : (
               <p className="mt-3 text-sm text-ink-faint">

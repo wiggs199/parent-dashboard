@@ -12,7 +12,7 @@ import {
 } from "../api/resources";
 import { errorMessage } from "../api/client";
 import { useAuth } from "../auth/AuthContext";
-import { ageLabel, focusColor } from "../lib/child";
+import { ageLabel, focusColor, focusIcon } from "../lib/child";
 
 function initials(name) {
   return name
@@ -106,15 +106,15 @@ function ChildCard({ child, weekLogs, onRename, onDelete }) {
 
       {areas.length > 0 && (
         <div className="flex flex-col gap-1.5">
-          {areas.slice(0, 3).map((a) => (
-            <span key={a} className="flex items-center gap-2 text-xs text-ink-soft">
-              <span
-                className="h-1.5 w-1.5 shrink-0 rounded-full"
-                style={{ background: focusColor(a) }}
-              />
-              {a}
-            </span>
-          ))}
+          {areas.slice(0, 3).map((a) => {
+            const Icon = focusIcon(a);
+            return (
+              <span key={a} className="flex items-center gap-2 text-xs text-ink-soft">
+                <Icon size={13} strokeWidth={2} className="shrink-0" style={{ color: focusColor(a) }} />
+                {a}
+              </span>
+            );
+          })}
           {areas.length > 3 && (
             <span className="text-xs text-ink-faint">+{areas.length - 3} more</span>
           )}
