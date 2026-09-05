@@ -113,11 +113,29 @@ on every deploy, so pushing is all that's needed in production. The
 
 ---
 
+## Error monitoring — Sentry
+
+Wired in (backend + frontend); dormant until the DSNs are set.
+
+1. sentry.io → sign up → create **two projects**: one **Python (FastAPI)**,
+   one **React**. Each gives a DSN (`https://…@…ingest.sentry.io/…`).
+2. **Backend:** Render → `parent-dashboard-api` → Environment → add
+   `SENTRY_DSN` = the Python DSN. Save (redeploys).
+3. **Frontend:** put the React DSN in `parent-dashboard-frontend/.env.production`
+   as `VITE_SENTRY_DSN=…`, then `npm run build && npx wrangler deploy`.
+4. **Verify:** while logged in, hit
+   `https://parent-dashboard-api.onrender.com/debug/sentry-test` — a
+   deliberate 500 that should appear in Sentry within a minute.
+
+Configured for privacy: errors only (no tracing, no session replay),
+`send_default_pii` off, request bodies / auth headers / query strings
+scrubbed before an event is sent.
+
 ## Before inviting more than close friends
 
 - Password reset flow (needs a transactional email service — Resend/Postmark)
-- Rate limiting on `/auth/login` and `/auth/signup`
-- Error monitoring (Sentry free tier)
+- ~~Rate limiting on `/auth/*`~~ (done)
+- ~~Error monitoring~~ (wired — set the DSNs, above)
 - Have the Privacy Policy / Terms reviewed
 - Move the Render instance off free (kills the cold start), consider Neon paid
   when you approach the free storage limit

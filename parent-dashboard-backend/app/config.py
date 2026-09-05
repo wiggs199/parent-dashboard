@@ -47,6 +47,10 @@ R2_BUCKET = os.getenv("R2_BUCKET", "")
 
 MAX_UPLOAD_BYTES = int(os.getenv("MAX_UPLOAD_BYTES", str(10 * 1024 * 1024)))  # 10 MB
 
+# Error monitoring (Sentry). Unset -> disabled, so dev and tests never
+# phone home.
+SENTRY_DSN = os.getenv("SENTRY_DSN", "")
+
 
 def _normalize_db_url(raw: str) -> str:
     """Accept the URL shapes hosts hand out and target the psycopg v3 driver.

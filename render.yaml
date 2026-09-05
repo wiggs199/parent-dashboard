@@ -42,5 +42,7 @@ services:
         sync: false
       - key: R2_BUCKET
         sync: false                   # novapath-documents
+      - key: SENTRY_DSN
+        sync: false                   # from sentry.io; blank = disabled
       - key: ACCESS_TOKEN_EXPIRE_MINUTES
         value: "1440"
