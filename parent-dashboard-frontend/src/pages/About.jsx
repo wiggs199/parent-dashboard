@@ -8,18 +8,21 @@ export default function About() {
         {SITE.name} began with my son.
       </p>
       <p>
-        When he was experiencing a speech delay, I found myself trying to keep
-        track of everything &mdash; home exercises, therapy appointments, school
-        forms, insurance letters, and all the little details that came with
-        supporting his progress. Somehow, the information I needed most was
-        scattered across a dozen different places.
+        When he experienced a speech delay, I found myself trying to keep track
+        of everything &mdash; home exercises, therapy appointments, school
+        forms, insurance paperwork, and all the little details that came with
+        supporting his progress. The information I needed most was scattered
+        everywhere: in my Notes app, a folder on the counter, buried email
+        attachments, and spreadsheets that quickly became outdated.
       </p>
       <p>
-        Every time a school or an insurer asked what we&rsquo;d been doing, it
-        meant a late night piecing it back together from memory. So I built the
-        tool I wished existed: one calm place to keep the log, the documents,
-        and the notes &mdash; and to pull a clear summary out of it when someone
-        needs one.
+        Whenever I needed to share his history or provide documentation, I found
+        myself piecing everything back together.
+      </p>
+      <p>
+        So I built the tool I wished existed: one calm place to keep the logs,
+        documents, and notes &mdash; and to turn them into a clear summary
+        whenever someone needs one.
       </p>
 
       <LegalSection heading="Who it&rsquo;s for">
