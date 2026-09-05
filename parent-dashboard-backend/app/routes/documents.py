@@ -18,17 +18,6 @@ router = APIRouter()
 _CATEGORIES = {"therapist", "school", "insurance", "other"}
 
 
-def _require_child_basics(child: models.Child) -> None:
-    if child.birth_year is None or not child.focus_areas:
-        raise HTTPException(
-            status_code=400,
-            detail=(
-                f"Add {child.name}'s birth year and at least one focus area on their "
-                "profile before uploading documents."
-            ),
-        )
-
-
 def _clean_name(name: str, fallback_ext_from: str = "") -> str:
     """A safe, single-segment display name. Decodes any percent-encoding a
     browser applied to odd filename characters, drops surrounding quotes,
@@ -58,8 +47,7 @@ def upload_document(
             detail="Document storage isn't set up yet. Please try again later.",
         )
 
-    child = get_owned_child_or_404(child_id, parent, db)
-    _require_child_basics(child)
+    get_owned_child_or_404(child_id, parent, db)
 
     if category not in _CATEGORIES:
         raise HTTPException(status_code=422, detail="Unknown category")

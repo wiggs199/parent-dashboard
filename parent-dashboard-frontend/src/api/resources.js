@@ -15,8 +15,8 @@ export const getStats = () => client.get("/auth/stats").then((r) => r.data);
 // Children
 export const listChildren = () => client.get("/children").then((r) => r.data);
 export const getChild = (id) => client.get(`/children/${id}`).then((r) => r.data);
-export const createChild = (name) =>
-  client.post("/children", { name }).then((r) => r.data);
+export const createChild = (name, birthYear) =>
+  client.post("/children", { name, birth_year: birthYear }).then((r) => r.data);
 export const updateChild = (id, patch) =>
   client.patch(`/children/${id}`, patch).then((r) => r.data);
 export const deleteChild = (id) => client.delete(`/children/${id}`);

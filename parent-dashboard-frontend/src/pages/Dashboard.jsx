@@ -86,7 +86,7 @@ function ChildCard({ child, weekLogs, onRename, onDelete }) {
               .join(" · ") || "Set up profile"}
           </span>
         </Link>
-        <div className="flex items-center gap-1 text-ink-faint opacity-0 transition-opacity focus-within:opacity-100 group-hover:opacity-100">
+        <div className="row-actions flex items-center gap-1 text-ink-faint">
           <button
             onClick={() => setEditing(true)}
             aria-label={`Rename ${child.name}`}
@@ -147,7 +147,10 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [newName, setNewName] = useState("");
+  const [newYear, setNewYear] = useState("");
   const [adding, setAdding] = useState(false);
+
+  const thisYear = new Date().getFullYear();
 
   const refreshStats = () => getStats().then(setStats).catch(() => {});
 
@@ -169,13 +172,19 @@ export default function Dashboard() {
   const handleAddChild = async (e) => {
     e.preventDefault();
     const name = newName.trim();
+    const year = Number(newYear);
     if (!name) return;
+    if (!year || year < 1990 || year > thisYear) {
+      setError("Enter the child's birth year.");
+      return;
+    }
     setAdding(true);
     setError("");
     try {
-      const child = await createChild(name);
+      const child = await createChild(name, year);
       setChildren((prev) => [...prev, child]);
       setNewName("");
+      setNewYear("");
       refreshStats();
     } catch (err) {
       setError(errorMessage(err));
@@ -231,14 +240,30 @@ export default function Dashboard() {
       )}
 
       <Card elevated className="mb-8 p-4">
-        <form onSubmit={handleAddChild} className="flex flex-col gap-3 sm:flex-row sm:items-center">
-          <span className="text-sm font-semibold text-ink sm:w-28">Add a child</span>
-          <TextInput
-            placeholder="Child's name"
-            value={newName}
-            onChange={(e) => setNewName(e.target.value)}
-            className="sm:flex-1"
-          />
+        <form onSubmit={handleAddChild} className="flex flex-col gap-3 sm:flex-row sm:items-end">
+          <span className="text-sm font-semibold text-ink sm:mb-2 sm:w-24">Add a child</span>
+          <label className="flex-1 text-xs font-medium text-ink-soft">
+            Name
+            <TextInput
+              placeholder="Child's name"
+              value={newName}
+              onChange={(e) => setNewName(e.target.value)}
+              className="mt-1"
+            />
+          </label>
+          <label className="text-xs font-medium text-ink-soft sm:w-28">
+            Birth year
+            <TextInput
+              type="number"
+              inputMode="numeric"
+              min="1990"
+              max={thisYear}
+              placeholder="e.g. 2018"
+              value={newYear}
+              onChange={(e) => setNewYear(e.target.value)}
+              className="mt-1"
+            />
+          </label>
           <Button type="submit" disabled={adding || !newName.trim()}>
             <Plus size={16} />
             {adding ? "Adding…" : "Add child"}

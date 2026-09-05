@@ -42,9 +42,9 @@ function TimelineEntry({ log, onEdit, onDelete }) {
         {log.mood_rating != null && (
           <span className="text-xs text-ink-faint">mood {log.mood_rating}/5</span>
         )}
-        <span className="ml-auto flex gap-3 text-xs text-ink-faint opacity-0 transition-opacity focus-within:opacity-100 group-hover:opacity-100">
-          <button onClick={onEdit} className="hover:text-ink">Edit</button>
-          <button onClick={onDelete} className="hover:text-persimmon-dark">Delete</button>
+        <span className="row-actions ml-auto flex gap-3 text-xs text-ink-faint">
+          <button onClick={onEdit} className="font-medium hover:text-ink">Edit</button>
+          <button onClick={onDelete} className="font-medium hover:text-persimmon-dark">Delete</button>
         </span>
       </div>
       {log.practiced_items && <p className="mt-1 text-sm text-ink">{log.practiced_items}</p>}

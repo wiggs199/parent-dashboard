@@ -5,14 +5,9 @@ import pytest
 
 @pytest.fixture()
 def ready_child(client, auth_headers):
-    """A parent + a child with the basics filled in (so uploads are allowed)."""
+    """A parent + a child."""
     a = auth_headers(email="a@example.com")
-    c = client.post("/children", json={"name": "Rae"}, headers=a).json()
-    client.patch(
-        f"/children/{c['id']}",
-        json={"birth_year": 2017, "focus_areas": ["Speech / language"]},
-        headers=a,
-    )
+    c = client.post("/children", json={"name": "Rae", "birth_year": 2018}, headers=a).json()
     return client, a, c
 
 
@@ -47,16 +42,9 @@ def test_upload_list_download_delete(ready_child):
     assert client.get(f"/documents/child/{c['id']}", headers=a).json() == []
 
 
-def test_upload_blocked_until_child_has_basics(client, auth_headers):
+def test_upload_needs_a_real_child(client, auth_headers):
     a = auth_headers(email="a@example.com")
-    c = client.post("/children", json={"name": "Nel"}, headers=a).json()
-
-    r = upload(client, a, c["id"])
-    assert r.status_code == 400
-    assert "birth year" in r.json()["detail"]
-
-    client.patch(f"/children/{c['id']}", json={"birth_year": 2019, "focus_areas": ["OT"]}, headers=a)
-    assert upload(client, a, c["id"]).status_code == 201
+    assert upload(client, a, 9999).status_code == 404
 
 
 def test_documents_scoped_to_owner(ready_child, auth_headers):

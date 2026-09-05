@@ -46,14 +46,21 @@ function ProfileForm({ child, onSave, onCancel }) {
     setCustom("");
   };
 
+  const thisYear = new Date().getFullYear();
+
   const submit = async (e) => {
     e.preventDefault();
     setError("");
+    const year = Number(birthYear);
+    if (!year || year < 1990 || year > thisYear) {
+      setError("Enter a valid birth year.");
+      return;
+    }
     setSaving(true);
     try {
       await onSave({
         name: name.trim(),
-        birth_year: birthYear === "" ? null : Number(birthYear),
+        birth_year: year,
         focus_areas: areas,
         profile_notes: notes.trim() || null,
       });
@@ -71,11 +78,13 @@ function ProfileForm({ child, onSave, onCancel }) {
           <Field label="Name">
             <TextInput required value={name} onChange={(e) => setName(e.target.value)} />
           </Field>
-          <Field label="Birth year" hint="Optional">
+          <Field label="Birth year">
             <TextInput
               type="number"
+              inputMode="numeric"
+              required
               min="1990"
-              max={new Date().getFullYear()}
+              max={thisYear}
               placeholder="e.g. 2018"
               value={birthYear}
               onChange={(e) => setBirthYear(e.target.value)}

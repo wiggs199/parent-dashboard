@@ -6,7 +6,7 @@ def setup(client, auth_headers):
     """One parent with a child and a log; plus a second parent."""
     a = auth_headers(email="a@example.com")
     b = auth_headers(email="b@example.com")
-    child = client.post("/children", json={"name": "Kid A"}, headers=a).json()
+    child = client.post("/children", json={"name": "Kid A", "birth_year": 2018}, headers=a).json()
     log = client.post(
         "/logs",
         json={"child_id": child["id"], "date": "2026-09-01", "type": "exercise", "notes": "n"},

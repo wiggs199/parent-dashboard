@@ -4,15 +4,23 @@ import pytest
 @pytest.fixture()
 def child(client, auth_headers):
     a = auth_headers(email="a@example.com")
-    c = client.post("/children", json={"name": "Sam"}, headers=a).json()
+    c = client.post("/children", json={"name": "Sam", "birth_year": 2018}, headers=a).json()
     return client, a, c
 
 
-def test_new_child_has_empty_profile(child):
+def test_new_child_has_birth_year_and_empty_rest(child):
     _, _, c = child
-    assert c["birth_year"] is None
+    assert c["birth_year"] == 2018
     assert c["focus_areas"] == []
     assert c["profile_notes"] is None
+
+
+def test_birth_year_is_required(client, auth_headers):
+    a = auth_headers(email="a@example.com")
+    assert client.post("/children", json={"name": "No Year"}, headers=a).status_code == 422
+    assert client.post(
+        "/children", json={"name": "Bad Year", "birth_year": 1800}, headers=a
+    ).status_code == 422
 
 
 def test_set_and_clear_profile_fields(child):

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useSearchParams, Link } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import { FolderClosed, Download, Trash2, Upload, Pencil } from "lucide-react";
 import PageHeader from "../components/PageHeader";
 import { Card, Button, Select, TextInput, Alert, EmptyState, Field } from "../components/ui";
@@ -38,9 +38,6 @@ const fmtDate = (iso) =>
         year: "numeric",
       })
     : "";
-
-const hasBasics = (child) =>
-  child && child.birth_year != null && child.focus_areas?.length > 0;
 
 function DocRow({ doc, onRename, onDelete, onDownload }) {
   const [editing, setEditing] = useState(false);
@@ -270,19 +267,6 @@ export default function Documents() {
         <EmptyState icon={FolderClosed} title="No children yet">
           Add a child on the dashboard first.
         </EmptyState>
-      ) : !hasBasics(activeChild) ? (
-        <Card elevated className="p-6">
-          <p className="text-sm text-ink">
-            Add {activeChild?.name}&rsquo;s birth year and at least one focus area
-            before uploading documents.
-          </p>
-          <Link
-            to={`/children/${childId}`}
-            className="mt-3 inline-block text-sm font-medium text-pine-dark hover:underline"
-          >
-            Go to {activeChild?.name}&rsquo;s profile
-          </Link>
-        </Card>
       ) : (
         <>
           <Card elevated className="mb-8 p-5">

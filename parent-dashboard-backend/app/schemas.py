@@ -55,7 +55,9 @@ class ChildBase(BaseModel):
 
 
 class ChildCreate(ChildBase):
-    pass
+    # Required — it's the one medical basic every parent knows, and it
+    # keeps documents/exports meaningful.
+    birth_year: int = Field(ge=1990, le=CURRENT_YEAR)
 
 
 class ChildUpdate(BaseModel):

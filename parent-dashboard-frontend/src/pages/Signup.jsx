@@ -10,15 +10,25 @@ export default function Signup() {
   const navigate = useNavigate();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [emailConfirm, setEmailConfirm] = useState("");
   const [password, setPassword] = useState("");
+  const [passwordConfirm, setPasswordConfirm] = useState("");
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    if (email.trim().toLowerCase() !== emailConfirm.trim().toLowerCase()) {
+      setError("The two email addresses don't match.");
+      return;
+    }
     if (password.length < 8) {
       setError("Password must be at least 8 characters.");
+      return;
+    }
+    if (password !== passwordConfirm) {
+      setError("The two passwords don't match.");
       return;
     }
     setSubmitting(true);
@@ -64,6 +74,16 @@ export default function Signup() {
             onChange={(e) => setEmail(e.target.value)}
           />
         </Field>
+        <Field label="Confirm email">
+          <TextInput
+            type="email"
+            required
+            autoComplete="off"
+            onPaste={(e) => e.preventDefault()}
+            value={emailConfirm}
+            onChange={(e) => setEmailConfirm(e.target.value)}
+          />
+        </Field>
         <Field label="Password" hint="At least 8 characters">
           <TextInput
             type="password"
@@ -71,6 +91,15 @@ export default function Signup() {
             autoComplete="new-password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+          />
+        </Field>
+        <Field label="Confirm password">
+          <TextInput
+            type="password"
+            required
+            autoComplete="new-password"
+            value={passwordConfirm}
+            onChange={(e) => setPasswordConfirm(e.target.value)}
           />
         </Field>
         <Button type="submit" disabled={submitting} className="w-full">

@@ -17,7 +17,9 @@ def create_child(
     db: Session = Depends(get_db),
     parent: models.Parent = Depends(get_current_parent),
 ):
-    db_child = models.Child(name=child.name, parent_id=parent.id)
+    db_child = models.Child(
+        name=child.name, birth_year=child.birth_year, parent_id=parent.id
+    )
     db.add(db_child)
     db.commit()
     db.refresh(db_child)

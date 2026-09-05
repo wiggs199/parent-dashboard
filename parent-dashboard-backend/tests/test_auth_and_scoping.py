@@ -7,7 +7,7 @@ def test_health_is_public(client):
 
 def test_endpoints_require_auth(client):
     assert client.get("/children").status_code == 401
-    assert client.post("/children", json={"name": "X"}).status_code == 401
+    assert client.post("/children", json={"name": "X", "birth_year": 2018}).status_code == 401
 
 
 def test_signup_and_login(client):
@@ -44,8 +44,8 @@ def test_children_are_scoped_to_parent(client, auth_headers):
     a = auth_headers(email="a@example.com")
     b = auth_headers(email="b@example.com")
 
-    child_a = client.post("/children", json={"name": "Kid A"}, headers=a).json()
-    client.post("/children", json={"name": "Kid B"}, headers=b)
+    child_a = client.post("/children", json={"name": "Kid A", "birth_year": 2018}, headers=a).json()
+    client.post("/children", json={"name": "Kid B", "birth_year": 2018}, headers=b)
 
     assert [c["name"] for c in client.get("/children", headers=a).json()] == ["Kid A"]
     assert [c["name"] for c in client.get("/children", headers=b).json()] == ["Kid B"]
@@ -56,7 +56,7 @@ def test_children_are_scoped_to_parent(client, auth_headers):
 def test_logs_documents_tips_respect_child_ownership(client, auth_headers):
     a = auth_headers(email="a@example.com")
     b = auth_headers(email="b@example.com")
-    child_a = client.post("/children", json={"name": "Kid A"}, headers=a).json()
+    child_a = client.post("/children", json={"name": "Kid A", "birth_year": 2018}, headers=a).json()
 
     good_log = {
         "child_id": child_a["id"],
@@ -83,12 +83,6 @@ def test_logs_documents_tips_respect_child_ownership(client, auth_headers):
     assert client.get(f"/logs/child/{child_a['id']}", headers=b).status_code == 404
     assert client.get(f"/logs/summary/{child_a['id']}", headers=b).status_code == 404
 
-    # uploads need the child's basics filled in first
-    client.patch(
-        f"/children/{child_a['id']}",
-        json={"birth_year": 2018, "focus_areas": ["speech"]},
-        headers=a,
-    )
     up = client.post(
         "/documents",
         data={"child_id": child_a["id"], "category": "school"},
