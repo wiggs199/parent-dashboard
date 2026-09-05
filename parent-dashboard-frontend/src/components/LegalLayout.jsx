@@ -31,6 +31,8 @@ export default function LegalLayout({ title, updated, children }) {
         </div>
 
         <p className="mt-12 border-t border-line pt-6 text-xs text-ink-faint">
+          <Link to="/about" className="hover:underline">About</Link>
+          {" · "}
           <Link to="/privacy" className="hover:underline">Privacy</Link>
           {" · "}
           <Link to="/terms" className="hover:underline">Terms</Link>

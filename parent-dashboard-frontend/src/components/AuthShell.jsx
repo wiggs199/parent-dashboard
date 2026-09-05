@@ -32,6 +32,8 @@ export default function AuthShell({ title, subtitle, children, footer }) {
         )}
 
         <p className="mt-6 text-center text-xs text-ink-faint">
+          <Link to="/about" className="hover:underline">About</Link>
+          {" · "}
           <Link to="/privacy" className="hover:underline">Privacy</Link>
           {" · "}
           <Link to="/terms" className="hover:underline">Terms</Link>
