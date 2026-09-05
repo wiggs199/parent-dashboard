@@ -5,7 +5,7 @@ export default function About() {
   return (
     <LegalLayout title={`About ${SITE.name}`}>
       <p className="text-base font-medium text-ink">
-        {SITE.name} began with my son.
+        {SITE.name} began with my son, Chase.
       </p>
       <p>
         When he experienced a speech delay, I found myself trying to keep track
