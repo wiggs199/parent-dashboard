@@ -4,20 +4,22 @@ import { SITE } from "../siteConfig";
 export default function About() {
   return (
     <LegalLayout title={`About ${SITE.name}`}>
-      <p>
-        I&rsquo;m a parent. My son has a speech delay, and {SITE.name} started
-        as my attempt to get a handle on everything that came with it. Between
-        home exercises, therapy appointments, school forms, and insurance
-        letters, the information about him lived in a dozen places &mdash; the
-        notes app, a folder on the counter, buried email attachments, a
-        spreadsheet no one kept up. Every time a school or an insurer asked what
-        we&rsquo;d been doing, it meant a late night piecing it back together
-        from memory.
+      <p className="text-base font-medium text-ink">
+        {SITE.name} began with my son.
       </p>
       <p>
-        So I built the tool I wished existed: one calm place to keep the log,
-        the documents, and the notes &mdash; and to pull a clean summary out of
-        it when someone needs one.
+        When he was experiencing a speech delay, I found myself trying to keep
+        track of everything &mdash; home exercises, therapy appointments, school
+        forms, insurance letters, and all the little details that came with
+        supporting his progress. Somehow, the information I needed most was
+        scattered across a dozen different places.
+      </p>
+      <p>
+        Every time a school or an insurer asked what we&rsquo;d been doing, it
+        meant a late night piecing it back together from memory. So I built the
+        tool I wished existed: one calm place to keep the log, the documents,
+        and the notes &mdash; and to pull a clear summary out of it when someone
+        needs one.
       </p>
 
       <LegalSection heading="Who it&rsquo;s for">
