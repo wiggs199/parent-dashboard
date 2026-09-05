@@ -1,11 +1,12 @@
 import { useState } from "react";
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink, Link, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
   NotebookPen,
   FolderClosed,
   LogOut,
   MessageSquare,
+  Info,
   Menu,
   X,
   Sun,
@@ -98,6 +99,10 @@ function AccountFooter() {
         <MessageSquare size={18} strokeWidth={1.75} />
         Send feedback
       </a>
+      <Link to="/about" className={item}>
+        <Info size={18} strokeWidth={1.75} />
+        About {SITE.name}
+      </Link>
       <button
         onClick={() => {
           logout();
