@@ -5,19 +5,33 @@ export default function About() {
   return (
     <LegalLayout title={`About ${SITE.name}`}>
       <p>
-        {SITE.name} started as one parent&rsquo;s attempt to get a handle on the
-        paperwork. Between home exercises, therapy appointments, school forms,
-        and insurance letters, the information about our child lived in a dozen
-        places &mdash; the notes app, a folder on the counter, buried email
-        attachments, a spreadsheet no one kept up. Every time a school or an
-        insurer asked what we&rsquo;d been doing, it meant a late night piecing
-        it back together from memory.
+        I&rsquo;m a parent. My son has a speech delay, and {SITE.name} started
+        as my attempt to get a handle on everything that came with it. Between
+        home exercises, therapy appointments, school forms, and insurance
+        letters, the information about him lived in a dozen places &mdash; the
+        notes app, a folder on the counter, buried email attachments, a
+        spreadsheet no one kept up. Every time a school or an insurer asked what
+        we&rsquo;d been doing, it meant a late night piecing it back together
+        from memory.
       </p>
       <p>
         So I built the tool I wished existed: one calm place to keep the log,
         the documents, and the notes &mdash; and to pull a clean summary out of
         it when someone needs one.
       </p>
+
+      <LegalSection heading="Who it&rsquo;s for">
+        <p>
+          It began with speech, but the problem isn&rsquo;t specific to any one
+          diagnosis. If you&rsquo;re a parent keeping track of appointments,
+          exercises, notes, and paperwork for your child &mdash; occupational or
+          physical therapy, learning support, behavioral or social goals,
+          managing a chronic condition, or just staying on top of regular
+          doctor visits &mdash; {SITE.name} is built for that. It doesn&rsquo;t
+          assume anything about why you&rsquo;re tracking. It just gives the
+          information one place to live.
+        </p>
+      </LegalSection>
 
       <LegalSection heading="What it is">
         <p>
