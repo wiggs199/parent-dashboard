@@ -1,4 +1,6 @@
-export const today = () => new Date().toISOString().slice(0, 10);
+// Local calendar date as YYYY-MM-DD (not UTC — matters near midnight in
+// timezones behind UTC, where toISOString() would roll to tomorrow).
+export const today = () => new Date().toLocaleDateString("en-CA");
 
 export const emptyLog = () => ({
   date: today(),

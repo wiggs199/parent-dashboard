@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Button, Select, TextInput, Textarea, Field } from "./ui";
+import { Button, Select, TextInput, Textarea, Field, Alert } from "./ui";
 import { today, emptyLog, formToPayload } from "../lib/logForm";
 import { LOG_TYPES, logType, mood as moodMeta } from "../lib/log";
 
@@ -36,11 +36,23 @@ function MoodPicker({ value, onChange }) {
 export default function LogForm({ initial, submitLabel = "Save", onSubmit, onCancel }) {
   const [form, setForm] = useState(initial ?? emptyLog());
   const [saving, setSaving] = useState(false);
+  const [formError, setFormError] = useState("");
   const setField = (key) => (e) => setForm((f) => ({ ...f, [key]: e.target.value }));
   const set = (key, val) => setForm((f) => ({ ...f, [key]: val }));
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setFormError("");
+
+    if (!form.date) {
+      setFormError("Choose a date for this entry.");
+      return;
+    }
+    if (form.date > today()) {
+      setFormError("The date can't be in the future.");
+      return;
+    }
+
     setSaving(true);
     try {
       await onSubmit(formToPayload(form));
@@ -52,9 +64,16 @@ export default function LogForm({ initial, submitLabel = "Save", onSubmit, onCan
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
+      {formError && <Alert>{formError}</Alert>}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <Field label="Date">
-          <TextInput type="date" max={today()} required value={form.date} onChange={setField("date")} />
+          <TextInput
+            type="date"
+            max={today()}
+            required
+            value={form.date}
+            onChange={setField("date")}
+          />
         </Field>
         <Field label="Type" hint={logType(form.type).hint}>
           <Select value={form.type} onChange={setField("type")}>

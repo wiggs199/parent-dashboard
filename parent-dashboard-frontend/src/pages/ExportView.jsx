@@ -141,7 +141,7 @@ export default function ExportView() {
               {ageLabel(child.birth_year) ? ` · ${ageLabel(child.birth_year)}` : ""}
             </p>
             <p className="mt-3 text-xs text-ink-faint">
-              Prepared {fmtLong(new Date().toISOString().slice(0, 10))} · {SITE.name}.
+              Prepared {fmtLong(new Date().toLocaleDateString("en-CA"))} · {SITE.name}.
               An organizational record kept by the parent or caregiver — not a
               clinical assessment.
             </p>
