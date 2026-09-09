@@ -4,6 +4,7 @@ import { Printer, ArrowLeft } from "lucide-react";
 import { getChild, listLogs } from "../api/resources";
 import { errorMessage } from "../api/client";
 import { ageLabel } from "../lib/child";
+import { logType, mood as moodMeta } from "../lib/log";
 import { SITE } from "../siteConfig";
 
 const fmtLong = (iso) =>
@@ -53,9 +54,12 @@ export default function ExportView() {
       .sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : a.id - b.id));
   }, [logs, from, to]);
 
-  const counts = useMemo(() => {
-    const ex = shown.filter((l) => l.type === "exercise").length;
-    return { total: shown.length, exercise: ex, exploration: shown.length - ex };
+  const breakdown = useMemo(() => {
+    const by = {};
+    for (const l of shown) by[l.type] = (by[l.type] || 0) + 1;
+    return Object.entries(by)
+      .map(([type, n]) => `${n} ${logType(type).label.toLowerCase()}`)
+      .join(", ");
   }, [shown]);
 
   if (state === "loading") return <p className="p-8 text-sm text-ink-soft">Loading…</p>;
@@ -161,11 +165,10 @@ export default function ExportView() {
 
           <section className="py-5">
             <p className="text-sm text-ink-soft">
-              {counts.total} {counts.total === 1 ? "entry" : "entries"}
-              {counts.total > 0 && (
+              {shown.length} {shown.length === 1 ? "entry" : "entries"}
+              {shown.length > 0 && (
                 <>
-                  {" "}· {counts.exercise} exercise, {counts.exploration} exploration ·{" "}
-                  {span}
+                  {" "}· {breakdown} · {span}
                 </>
               )}
               {(from || to) && (
@@ -187,9 +190,7 @@ export default function ExportView() {
                   <div key={log.id} className="log-row grid grid-cols-[7rem_1fr] gap-4 py-3">
                     <div className="text-sm">
                       <div className="font-medium text-ink">{fmtShort(log.date)}</div>
-                      <div className="text-xs uppercase tracking-wide text-ink-faint">
-                        {log.type}
-                      </div>
+                      <div className="text-xs text-ink-faint">{logType(log.type).label}</div>
                     </div>
                     <div className="text-sm">
                       {log.practiced_items && (
@@ -197,7 +198,9 @@ export default function ExportView() {
                       )}
                       {log.notes && <p className="text-ink-soft">{log.notes}</p>}
                       {log.mood_rating != null && (
-                        <p className="text-xs text-ink-faint">Mood {log.mood_rating}/5</p>
+                        <p className="text-xs text-ink-faint">
+                          Mood: {moodMeta(log.mood_rating)?.label} ({log.mood_rating}/5)
+                        </p>
                       )}
                       {!log.practiced_items && !log.notes && log.mood_rating == null && (
                         <p className="text-ink-faint">—</p>

@@ -6,6 +6,7 @@ import { Card, Select, Alert, EmptyState } from "../components/ui";
 import NovaMark from "../components/NovaMark";
 import LogForm from "../components/LogForm";
 import { logToForm } from "../lib/logForm";
+import { logType, mood as moodMeta } from "../lib/log";
 import { listChildren, listLogs, createLog, updateLog, deleteLog } from "../api/resources";
 import { errorMessage } from "../api/client";
 
@@ -15,16 +16,26 @@ function formatDate(iso) {
 }
 
 function TypeBadge({ type }) {
-  const exploration = type === "exploration";
+  const t = logType(type);
+  const Icon = t.Icon;
   return (
     <span
-      className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
-        exploration
-          ? "bg-persimmon-soft text-persimmon-dark"
-          : "bg-pine-soft text-pine-dark"
-      }`}
+      className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold"
+      style={{ background: `${t.color}1f`, color: t.color }}
     >
-      {type}
+      <Icon size={12} strokeWidth={2.25} />
+      {t.label}
+    </span>
+  );
+}
+
+function MoodFace({ n }) {
+  const m = moodMeta(n);
+  if (!m) return null;
+  const Icon = m.Icon;
+  return (
+    <span className="inline-flex items-center gap-1 text-xs text-ink-faint" title={`Mood: ${m.label}`}>
+      <Icon size={15} strokeWidth={1.75} style={{ color: m.color }} />
     </span>
   );
 }
@@ -39,9 +50,7 @@ function TimelineEntry({ log, onEdit, onDelete }) {
       <div className="flex flex-wrap items-center gap-2">
         <span className="text-sm font-semibold text-ink">{formatDate(log.date)}</span>
         <TypeBadge type={log.type} />
-        {log.mood_rating != null && (
-          <span className="text-xs text-ink-faint">mood {log.mood_rating}/5</span>
-        )}
+        {log.mood_rating != null && <MoodFace n={log.mood_rating} />}
         <span className="row-actions ml-auto flex gap-3 text-xs text-ink-faint">
           <button onClick={onEdit} className="font-medium hover:text-ink">Edit</button>
           <button onClick={onDelete} className="font-medium hover:text-persimmon-dark">Delete</button>
@@ -145,7 +154,7 @@ export default function Logs() {
     <div>
       <PageHeader
         title="Logs"
-        subtitle="A calm record of exercises and exploration, day by day."
+        subtitle="A calm record of what you're doing, day by day."
         action={childPicker}
       />
 

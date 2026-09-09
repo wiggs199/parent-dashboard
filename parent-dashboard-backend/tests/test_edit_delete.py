@@ -9,7 +9,7 @@ def setup(client, auth_headers):
     child = client.post("/children", json={"name": "Kid A", "birth_year": 2018}, headers=a).json()
     log = client.post(
         "/logs",
-        json={"child_id": child["id"], "date": "2026-09-01", "type": "exercise", "notes": "n"},
+        json={"child_id": child["id"], "date": "2026-09-01", "type": "home_practice", "notes": "n"},
         headers=a,
     ).json()
     return client, a, b, child, log
@@ -42,7 +42,7 @@ def test_edit_log_partial(setup):
     assert r.status_code == 200
     body = r.json()
     assert body["notes"] == "updated" and body["mood_rating"] == 5
-    assert body["type"] == "exercise"  # untouched field preserved
+    assert body["type"] == "home_practice"  # untouched field preserved
     assert body["date"] == "2026-09-01"
 
 
@@ -72,26 +72,26 @@ def test_delete_log(setup):
 def test_dashboard_stats(setup):
     from datetime import date, timedelta
 
-    client, a, b, child, _ = setup  # a has 1 child + 1 recent log
-    # a stale log (>7 days) must not count
-    client.post(
-        "/logs",
-        json={
-            "child_id": child["id"],
-            "date": (date.today() - timedelta(days=30)).isoformat(),
-            "type": "exercise",
-        },
-        headers=a,
-    )
-    # a fresh one that does
-    client.post(
-        "/logs",
-        json={"child_id": child["id"], "date": date.today().isoformat(), "type": "exercise"},
-        headers=a,
-    )
+    client, a, b, child, _ = setup  # setup's log is dated far enough back not to count
+
+    def add(days_ago):
+        client.post(
+            "/logs",
+            json={
+                "child_id": child["id"],
+                "date": (date.today() - timedelta(days=days_ago)).isoformat(),
+                "type": "home_practice",
+            },
+            headers=a,
+        )
+
+    add(30)  # stale — must not count
+    add(2)   # within the week
+    add(0)   # today
+
     s = client.get("/auth/stats", headers=a).json()
     assert s["children"] == 1
-    assert s["logs_this_week"] == 2  # the setup log + today's; not the 30-day-old one
+    assert s["logs_this_week"] == 2
     assert s["per_child"][str(child["id"])] == 2
 
     assert client.get("/auth/stats", headers=b).json() == {

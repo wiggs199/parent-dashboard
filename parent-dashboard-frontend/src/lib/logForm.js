@@ -2,7 +2,7 @@ export const today = () => new Date().toISOString().slice(0, 10);
 
 export const emptyLog = () => ({
   date: today(),
-  type: "exercise",
+  type: "home_practice",
   practiced_items: "",
   mood_rating: "",
   notes: "",

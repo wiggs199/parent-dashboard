@@ -3,7 +3,13 @@ from typing import List, Literal, Optional
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
 
-LogType = Literal["exercise", "exploration"]
+LogType = Literal[
+    "home_practice",
+    "activity",
+    "appointment",
+    "observation",
+    "milestone",
+]
 CURRENT_YEAR = datetime.now().year
 
 

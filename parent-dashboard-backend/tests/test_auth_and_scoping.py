@@ -61,7 +61,7 @@ def test_logs_documents_tips_respect_child_ownership(client, auth_headers):
     good_log = {
         "child_id": child_a["id"],
         "date": "2026-09-02",
-        "type": "exploration",
+        "type": "activity",
         "mood_rating": 4,
         "notes": "painting",
     }
