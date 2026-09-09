@@ -51,7 +51,8 @@ class LogEntry(Base):
     id = Column(Integer, primary_key=True, index=True)
     child_id = Column(Integer, ForeignKey("children.id"), nullable=False, index=True)
     date = Column(Date)
-    type = Column(String)  # e.g., "exercise" or "exploration"
+    time_of_day = Column(String, nullable=True)  # morning | afternoon | evening
+    type = Column(String)
     practiced_items = Column(Text, nullable=True)
     mood_rating = Column(Integer, nullable=True)
     notes = Column(Text, nullable=True)

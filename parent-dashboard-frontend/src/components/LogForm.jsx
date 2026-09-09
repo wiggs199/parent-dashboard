@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button, Select, TextInput, Textarea, Field, Alert } from "./ui";
 import { today, emptyLog, formToPayload } from "../lib/logForm";
-import { LOG_TYPES, logType, mood as moodMeta } from "../lib/log";
+import { LOG_TYPES, TIMES_OF_DAY, logType, mood as moodMeta } from "../lib/log";
 
 function MoodPicker({ value, onChange }) {
   return (
@@ -26,6 +26,32 @@ function MoodPicker({ value, onChange }) {
               strokeWidth={1.75}
               style={{ color: active ? m.color : "var(--color-ink-faint)" }}
             />
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+function TimeOfDayPicker({ value, onChange }) {
+  return (
+    <div className="flex flex-wrap gap-2">
+      {TIMES_OF_DAY.map(({ value: v, label, Icon }) => {
+        const active = value === v;
+        return (
+          <button
+            key={v}
+            type="button"
+            aria-pressed={active}
+            onClick={() => onChange(active ? "" : v)}
+            className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm transition-colors ${
+              active
+                ? "border-pine bg-pine-soft text-pine-dark"
+                : "border-line-strong text-ink-soft hover:border-ink-faint hover:text-ink"
+            }`}
+          >
+            <Icon size={15} strokeWidth={1.75} />
+            {label}
           </button>
         );
       })}
@@ -85,6 +111,13 @@ export default function LogForm({ initial, submitLabel = "Save", onSubmit, onCan
           </Select>
         </Field>
       </div>
+
+      <Field label="Time of day" hint="Optional">
+        <TimeOfDayPicker
+          value={form.time_of_day}
+          onChange={(v) => set("time_of_day", v)}
+        />
+      </Field>
 
       <Field label="What happened">
         <TextInput

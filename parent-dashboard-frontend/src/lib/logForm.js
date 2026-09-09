@@ -4,6 +4,7 @@ export const today = () => new Date().toLocaleDateString("en-CA");
 
 export const emptyLog = () => ({
   date: today(),
+  time_of_day: "",
   type: "home_practice",
   practiced_items: "",
   mood_rating: "",
@@ -13,6 +14,7 @@ export const emptyLog = () => ({
 // Turn an API log record into form values.
 export const logToForm = (log) => ({
   date: log.date,
+  time_of_day: log.time_of_day ?? "",
   type: log.type,
   practiced_items: log.practiced_items ?? "",
   mood_rating: log.mood_rating == null ? "" : String(log.mood_rating),
@@ -22,6 +24,7 @@ export const logToForm = (log) => ({
 // Turn form values into an API payload.
 export const formToPayload = (form) => ({
   date: form.date,
+  time_of_day: form.time_of_day || null,
   type: form.type,
   practiced_items: form.practiced_items.trim() || null,
   mood_rating: form.mood_rating === "" ? null : Number(form.mood_rating),

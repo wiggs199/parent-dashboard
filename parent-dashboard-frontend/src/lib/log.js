@@ -9,6 +9,9 @@ import {
   Meh,
   Smile,
   Laugh,
+  Sunrise,
+  Sun,
+  Sunset,
 } from "lucide-react";
 
 // The log "type" options — order here is the dropdown order.
@@ -60,6 +63,18 @@ const FALLBACK = {
 };
 
 export const logType = (value) => BY_VALUE[value] || { ...FALLBACK, label: value || "Log" };
+
+// Optional time-of-day. Order here is the picker order and the within-day sort.
+export const TIMES_OF_DAY = [
+  { value: "morning", label: "Morning", Icon: Sunrise },
+  { value: "afternoon", label: "Afternoon", Icon: Sun },
+  { value: "evening", label: "Evening", Icon: Sunset },
+];
+
+const TOD_RANK = { morning: 0, afternoon: 1, evening: 2 };
+export const timeOfDay = (v) => TIMES_OF_DAY.find((t) => t.value === v) || null;
+// unset sorts last within a day
+export const timeOfDayRank = (v) => (v in TOD_RANK ? TOD_RANK[v] : 3);
 
 // Mood 1-5 -> a face. Colour goes red-ish low, green-ish high, quiet in the middle.
 const MOOD = {

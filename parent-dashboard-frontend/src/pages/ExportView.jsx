@@ -4,7 +4,7 @@ import { Printer, ArrowLeft } from "lucide-react";
 import { getChild, listLogs } from "../api/resources";
 import { errorMessage } from "../api/client";
 import { ageLabel } from "../lib/child";
-import { logType, mood as moodMeta } from "../lib/log";
+import { logType, mood as moodMeta, timeOfDay, timeOfDayRank } from "../lib/log";
 import { SITE } from "../siteConfig";
 
 const fmtLong = (iso) =>
@@ -51,7 +51,11 @@ export default function ExportView() {
   const shown = useMemo(() => {
     return logs
       .filter((l) => (!from || l.date >= from) && (!to || l.date <= to))
-      .sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : a.id - b.id));
+      .sort((a, b) => {
+        if (a.date !== b.date) return a.date < b.date ? -1 : 1;
+        const t = timeOfDayRank(a.time_of_day) - timeOfDayRank(b.time_of_day);
+        return t || a.id - b.id;
+      });
   }, [logs, from, to]);
 
   const breakdown = useMemo(() => {
@@ -190,6 +194,11 @@ export default function ExportView() {
                   <div key={log.id} className="log-row grid grid-cols-[7rem_1fr] gap-4 py-3">
                     <div className="text-sm">
                       <div className="font-medium text-ink">{fmtShort(log.date)}</div>
+                      {timeOfDay(log.time_of_day) && (
+                        <div className="text-xs text-ink-faint">
+                          {timeOfDay(log.time_of_day).label}
+                        </div>
+                      )}
                       <div className="text-xs text-ink-faint">{logType(log.type).label}</div>
                     </div>
                     <div className="text-sm">

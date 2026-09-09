@@ -10,6 +10,7 @@ LogType = Literal[
     "observation",
     "milestone",
 ]
+TimeOfDay = Literal["morning", "afternoon", "evening"]
 CURRENT_YEAR = datetime.now().year
 
 
@@ -102,6 +103,7 @@ class ChildRead(ChildBase):
 class LogEntryBase(BaseModel):
     child_id: int
     date: date
+    time_of_day: Optional[TimeOfDay] = None
     type: LogType
     practiced_items: Optional[str] = None
     mood_rating: Optional[int] = Field(default=None, ge=1, le=5)
@@ -115,6 +117,7 @@ class LogEntryCreate(LogEntryBase):
 class LogEntryUpdate(BaseModel):
     # partial update — child_id is fixed once created
     date: Optional[date] = None
+    time_of_day: Optional[TimeOfDay] = None
     type: Optional[LogType] = None
     practiced_items: Optional[str] = None
     mood_rating: Optional[int] = Field(default=None, ge=1, le=5)

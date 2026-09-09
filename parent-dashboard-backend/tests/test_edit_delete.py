@@ -54,6 +54,30 @@ def test_edit_log_validates(setup):
     assert client.patch(
         f"/logs/{log['id']}", json={"type": "banana"}, headers=a
     ).status_code == 422
+    assert client.patch(
+        f"/logs/{log['id']}", json={"time_of_day": "midnight"}, headers=a
+    ).status_code == 422
+
+
+def test_time_of_day(setup):
+    client, a, _, child, _ = setup
+    made = client.post(
+        "/logs",
+        json={
+            "child_id": child["id"],
+            "date": "2026-09-01",
+            "type": "appointment",
+            "time_of_day": "afternoon",
+        },
+        headers=a,
+    )
+    assert made.status_code == 201
+    assert made.json()["time_of_day"] == "afternoon"
+
+    cleared = client.patch(
+        f"/logs/{made.json()['id']}", json={"time_of_day": None}, headers=a
+    )
+    assert cleared.json()["time_of_day"] is None
 
 
 def test_edit_and_delete_log_respect_ownership(setup):

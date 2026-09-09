@@ -6,7 +6,7 @@ import { Card, Select, Alert, EmptyState } from "../components/ui";
 import NovaMark from "../components/NovaMark";
 import LogForm from "../components/LogForm";
 import { logToForm } from "../lib/logForm";
-import { logType, mood as moodMeta } from "../lib/log";
+import { logType, mood as moodMeta, timeOfDay, timeOfDayRank } from "../lib/log";
 import { listChildren, listLogs, createLog, updateLog, deleteLog } from "../api/resources";
 import { errorMessage } from "../api/client";
 
@@ -49,6 +49,20 @@ function TimelineEntry({ log, onEdit, onDelete }) {
       />
       <div className="flex flex-wrap items-center gap-2">
         <span className="text-sm font-semibold text-ink">{formatDate(log.date)}</span>
+        {timeOfDay(log.time_of_day) && (
+          <span className="inline-flex items-center gap-1 text-xs text-ink-faint">
+            {(() => {
+              const T = timeOfDay(log.time_of_day);
+              const Icon = T.Icon;
+              return (
+                <>
+                  <Icon size={13} strokeWidth={1.75} />
+                  {T.label}
+                </>
+              );
+            })()}
+          </span>
+        )}
         <TypeBadge type={log.type} />
         {log.mood_rating != null && <MoodFace n={log.mood_rating} />}
         <span className="row-actions ml-auto flex gap-3 text-xs text-ink-faint">
@@ -100,8 +114,13 @@ export default function Logs() {
     [children, childId],
   );
 
+  // Newest first: by date desc, then later-in-day first, then newest entry.
   const sortLogs = (list) =>
-    [...list].sort((a, b) => (a.date < b.date ? 1 : a.date > b.date ? -1 : b.id - a.id));
+    [...list].sort((a, b) => {
+      if (a.date !== b.date) return a.date < b.date ? 1 : -1;
+      const t = timeOfDayRank(b.time_of_day) - timeOfDayRank(a.time_of_day);
+      return t || b.id - a.id;
+    });
 
   const handleCreate = async (payload) => {
     setError("");
