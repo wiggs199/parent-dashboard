@@ -32,10 +32,28 @@ client.interceptors.response.use(
 export function errorMessage(error, fallback = "Something went wrong. Please try again.") {
   if (error?.response?.status === 429)
     return "Too many attempts. Wait a minute and try again.";
+  if (error?.code === "ERR_NETWORK")
+    return "Can't reach the server. Please check your connection and try again.";
+
   const detail = error?.response?.data?.detail;
   if (typeof detail === "string") return detail;
-  if (Array.isArray(detail) && detail[0]?.msg) return detail[0].msg;
-  if (error?.code === "ERR_NETWORK") return "Can't reach the server. Is the backend running?";
+
+  if (Array.isArray(detail) && detail.length) {
+    // FastAPI 422s: pick the most useful of the field errors, skip the
+    // noisy "Input should be None" branch that comes from optional-union
+    // fields, and name the field.
+    const useful =
+      detail.find((d) => d.msg && !/should be None/i.test(d.msg)) || detail[0];
+    const field = Array.isArray(useful.loc) ? useful.loc[useful.loc.length - 1] : null;
+    const msg = (useful.msg || "").replace(/^(Value error, |Assertion failed, )/, "");
+    if (error.response.status === 422) {
+      return field && field !== "body"
+        ? `Please check the “${String(field).replace(/_/g, " ")}” field.`
+        : msg || "Please check the form and try again.";
+    }
+    return msg || fallback;
+  }
+
   return fallback;
 }
 
