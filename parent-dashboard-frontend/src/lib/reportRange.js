@@ -2,11 +2,13 @@ import { today } from "./logForm";
 
 const iso = (d) => d.toLocaleDateString("en-CA");
 
-// The Sept 1 that starts the current US school year.
+// The Sept 1 that starts the current US school year. Before this year's
+// Sept 1, that's *last* year's — so the range is never in the future.
 function schoolYearStart() {
   const now = new Date();
-  const year = now.getMonth() >= 7 ? now.getFullYear() : now.getFullYear() - 1; // Aug+
-  return `${year}-09-01`;
+  const y = now.getFullYear();
+  const start = now >= new Date(y, 8, 1) ? y : y - 1; // month 8 = September
+  return `${start}-09-01`;
 }
 
 function daysAgo(n) {
