@@ -1,0 +1,28 @@
+import { today } from "./logForm";
+
+const iso = (d) => d.toLocaleDateString("en-CA");
+
+// The Sept 1 that starts the current US school year.
+function schoolYearStart() {
+  const now = new Date();
+  const year = now.getMonth() >= 7 ? now.getFullYear() : now.getFullYear() - 1; // Aug+
+  return `${year}-09-01`;
+}
+
+function daysAgo(n) {
+  const d = new Date();
+  d.setDate(d.getDate() - n);
+  return iso(d);
+}
+
+// Each preset returns { from, to } (empty string = unbounded).
+export const RANGE_PRESETS = [
+  { key: "all", label: "All", range: () => ({ from: "", to: "" }) },
+  { key: "30", label: "Last 30 days", range: () => ({ from: daysAgo(30), to: today() }) },
+  { key: "90", label: "Last 90 days", range: () => ({ from: daysAgo(90), to: today() }) },
+  {
+    key: "school",
+    label: "This school year",
+    range: () => ({ from: schoolYearStart(), to: today() }),
+  },
+];

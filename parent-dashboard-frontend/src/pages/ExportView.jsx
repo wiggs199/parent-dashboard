@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Printer, ArrowLeft } from "lucide-react";
-import { getChild, listLogs } from "../api/resources";
+import { getChild, listLogs, listDocuments } from "../api/resources";
 import { errorMessage } from "../api/client";
 import { ageLabel } from "../lib/child";
-import { logType, mood as moodMeta, timeOfDay, timeOfDayRank } from "../lib/log";
+import { LOG_TYPES, logType, mood as moodMeta, timeOfDay, timeOfDayRank } from "../lib/log";
+import { RANGE_PRESETS } from "../lib/reportRange";
 import { SITE } from "../siteConfig";
 
 const fmtLong = (iso) =>
@@ -20,22 +21,35 @@ const fmtShort = (iso) =>
     year: "numeric",
   });
 
+const DOC_CATEGORY = {
+  therapist: "Therapist",
+  school: "School / IEP",
+  insurance: "Insurance",
+  other: "Other",
+};
+
 export default function ExportView() {
   const { id } = useParams();
   const [child, setChild] = useState(null);
   const [logs, setLogs] = useState([]);
+  const [docs, setDocs] = useState([]);
   const [state, setState] = useState("loading");
   const [error, setError] = useState("");
+
   const [from, setFrom] = useState("");
   const [to, setTo] = useState("");
+  const [preset, setPreset] = useState("all");
+  // which types are included — all on by default
+  const [types, setTypes] = useState(() => new Set(LOG_TYPES.map((t) => t.value)));
 
   useEffect(() => {
     let cancelled = false;
-    Promise.all([getChild(id), listLogs(id)])
-      .then(([c, l]) => {
+    Promise.all([getChild(id), listLogs(id), listDocuments(id).catch(() => [])])
+      .then(([c, l, d]) => {
         if (cancelled) return;
         setChild(c);
         setLogs(l);
+        setDocs(d);
         setState("ok");
       })
       .catch((err) => {
@@ -48,22 +62,61 @@ export default function ExportView() {
     };
   }, [id]);
 
+  const applyPreset = (key) => {
+    setPreset(key);
+    const p = RANGE_PRESETS.find((x) => x.key === key);
+    if (p) {
+      const { from: f, to: t } = p.range();
+      setFrom(f);
+      setTo(t);
+    }
+  };
+
+  const toggleType = (value) =>
+    setTypes((prev) => {
+      const next = new Set(prev);
+      next.has(value) ? next.delete(value) : next.add(value);
+      return next;
+    });
+
   const shown = useMemo(() => {
     return logs
-      .filter((l) => (!from || l.date >= from) && (!to || l.date <= to))
+      .filter(
+        (l) =>
+          (!from || l.date >= from) &&
+          (!to || l.date <= to) &&
+          types.has(l.type),
+      )
       .sort((a, b) => {
         if (a.date !== b.date) return a.date < b.date ? -1 : 1;
         const t = timeOfDayRank(a.time_of_day) - timeOfDayRank(b.time_of_day);
         return t || a.id - b.id;
       });
-  }, [logs, from, to]);
+  }, [logs, from, to, types]);
 
-  const breakdown = useMemo(() => {
-    const by = {};
-    for (const l of shown) by[l.type] = (by[l.type] || 0) + 1;
-    return Object.entries(by)
-      .map(([type, n]) => `${n} ${logType(type).label.toLowerCase()}`)
-      .join(", ");
+  const summary = useMemo(() => {
+    const byType = {};
+    const moods = [];
+    const days = new Set();
+    for (const l of shown) {
+      byType[l.type] = (byType[l.type] || 0) + 1;
+      days.add(l.date);
+      if (l.mood_rating != null) moods.push(l.mood_rating);
+    }
+    const avgMood =
+      moods.length > 0
+        ? Math.round((moods.reduce((s, n) => s + n, 0) / moods.length) * 10) / 10
+        : null;
+    return {
+      total: shown.length,
+      days: days.size,
+      byType: LOG_TYPES.filter((t) => byType[t.value]).map((t) => ({
+        label: t.label,
+        n: byType[t.value],
+      })),
+      avgMood,
+      moodCount: moods.length,
+    };
   }, [shown]);
 
   if (state === "loading") return <p className="p-8 text-sm text-ink-soft">Loading…</p>;
@@ -85,7 +138,12 @@ export default function ExportView() {
   const span =
     shown.length > 0
       ? `${fmtShort(shown[0].date)} – ${fmtShort(shown[shown.length - 1].date)}`
-      : "—";
+      : null;
+  const rangeLabel =
+    from || to
+      ? `${from ? fmtShort(from) : "the start"} to ${to ? fmtShort(to) : "today"}`
+      : "the full record";
+  const allTypes = types.size === LOG_TYPES.length;
 
   return (
     <div className="min-h-screen bg-surface-sunk">
@@ -95,50 +153,94 @@ export default function ExportView() {
           .paper { box-shadow: none !important; margin: 0 !important; max-width: none !important; }
           body { background: #fff !important; }
           @page { margin: 18mm 16mm; }
-          .log-row { break-inside: avoid; }
+          .log-row, .keep { break-inside: avoid; }
         }
       `}</style>
 
-      {/* toolbar */}
+      {/* ---- controls (screen only) ---- */}
       <div className="no-print sticky top-0 z-10 border-b border-line bg-surface">
-        <div className="mx-auto flex max-w-3xl flex-wrap items-center gap-3 px-5 py-3">
-          <Link
-            to={`/children/${id}`}
-            className="inline-flex items-center gap-1.5 text-sm text-ink-soft hover:text-ink"
-          >
-            <ArrowLeft size={15} /> Back
-          </Link>
-          <label className="ml-auto text-xs text-ink-soft">
-            From{" "}
-            <input
-              type="date"
-              value={from}
-              onChange={(e) => setFrom(e.target.value)}
-              className="rounded border border-line-strong px-1.5 py-1 text-xs"
-            />
-          </label>
-          <label className="text-xs text-ink-soft">
-            To{" "}
-            <input
-              type="date"
-              value={to}
-              onChange={(e) => setTo(e.target.value)}
-              className="rounded border border-line-strong px-1.5 py-1 text-xs"
-            />
-          </label>
-          <button
-            onClick={() => window.print()}
-            className="inline-flex items-center gap-2 rounded-lg bg-pine px-4 py-2 text-sm font-medium text-surface hover:bg-pine-dark"
-          >
-            <Printer size={15} /> Print / Save as PDF
-          </button>
+        <div className="mx-auto max-w-3xl px-5 py-3">
+          <div className="flex items-center gap-3">
+            <Link
+              to={`/children/${id}`}
+              className="inline-flex items-center gap-1.5 text-sm text-ink-soft hover:text-ink"
+            >
+              <ArrowLeft size={15} /> Back
+            </Link>
+            <button
+              onClick={() => window.print()}
+              className="ml-auto inline-flex items-center gap-2 rounded-xl bg-pine px-4 py-2 text-sm font-semibold text-white shadow-[var(--shadow-btn)] hover:bg-pine-dark"
+            >
+              <Printer size={15} /> Print / Save as PDF
+            </button>
+          </div>
+
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            <span className="text-xs font-semibold text-ink-soft">Range</span>
+            {RANGE_PRESETS.map((p) => (
+              <button
+                key={p.key}
+                onClick={() => applyPreset(p.key)}
+                className={`rounded-full border px-3 py-1 text-xs transition-colors ${
+                  preset === p.key
+                    ? "border-pine bg-pine-soft text-pine-dark"
+                    : "border-line-strong text-ink-soft hover:text-ink"
+                }`}
+              >
+                {p.label}
+              </button>
+            ))}
+            <label className="ml-1 text-xs text-ink-soft">
+              <input
+                type="date"
+                value={from}
+                onChange={(e) => {
+                  setFrom(e.target.value);
+                  setPreset("custom");
+                }}
+                className="rounded border border-line-strong bg-surface px-1.5 py-1 text-xs"
+              />
+            </label>
+            <span className="text-xs text-ink-faint">to</span>
+            <label className="text-xs text-ink-soft">
+              <input
+                type="date"
+                value={to}
+                onChange={(e) => {
+                  setTo(e.target.value);
+                  setPreset("custom");
+                }}
+                className="rounded border border-line-strong bg-surface px-1.5 py-1 text-xs"
+              />
+            </label>
+          </div>
+
+          <div className="mt-2 flex flex-wrap items-center gap-2">
+            <span className="text-xs font-semibold text-ink-soft">Include</span>
+            {LOG_TYPES.map((t) => {
+              const on = types.has(t.value);
+              return (
+                <button
+                  key={t.value}
+                  onClick={() => toggleType(t.value)}
+                  className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs transition-colors ${
+                    on
+                      ? "border-pine bg-pine-soft text-pine-dark"
+                      : "border-line-strong text-ink-faint line-through"
+                  }`}
+                >
+                  {t.label}
+                </button>
+              );
+            })}
+          </div>
         </div>
       </div>
 
-      {/* the document */}
+      {/* ---- the document ---- */}
       <div className="mx-auto my-8 max-w-3xl">
         <div className="paper bg-surface px-10 py-12 shadow-sm sm:px-14">
-          <header className="border-b border-line pb-5">
+          <header className="keep border-b border-line pb-5">
             <h1 className="text-2xl font-semibold text-ink">{child.name}</h1>
             <p className="mt-0.5 text-sm text-ink-soft">
               Activity record
@@ -152,7 +254,7 @@ export default function ExportView() {
           </header>
 
           {(child.focus_areas?.length || child.profile_notes) && (
-            <section className="border-b border-line py-5">
+            <section className="keep border-b border-line py-5">
               {child.focus_areas?.length > 0 && (
                 <p className="text-sm text-ink">
                   <span className="font-medium">Focus areas: </span>
@@ -167,29 +269,75 @@ export default function ExportView() {
             </section>
           )}
 
-          <section className="py-5">
-            <p className="text-sm text-ink-soft">
-              {shown.length} {shown.length === 1 ? "entry" : "entries"}
-              {shown.length > 0 && (
-                <>
-                  {" "}· {breakdown} · {span}
-                </>
+          {/* summary */}
+          <section className="keep border-b border-line py-5">
+            <h2 className="text-xs font-semibold uppercase tracking-[0.1em] text-ink-faint">
+              Summary
+            </h2>
+            <p className="mt-2 text-sm text-ink-soft">
+              Covers {rangeLabel}
+              {!allTypes && (
+                <> · limited to {[...types].map((v) => logType(v).label.toLowerCase()).join(", ")}</>
               )}
-              {(from || to) && (
-                <>
-                  {" "}
-                  <span className="text-ink-faint">
-                    (filtered{from ? ` from ${fmtShort(from)}` : ""}
-                    {to ? ` to ${fmtShort(to)}` : ""})
-                  </span>
-                </>
-              )}
+              .
             </p>
-
-            {shown.length === 0 ? (
-              <p className="mt-6 text-sm text-ink-faint">No entries in this range.</p>
+            {summary.total === 0 ? (
+              <p className="mt-2 text-sm text-ink-faint">No entries match.</p>
             ) : (
-              <div className="mt-4 divide-y divide-line">
+              <ul className="mt-2 space-y-1 text-sm text-ink">
+                <li>
+                  <span className="font-medium">{summary.total}</span>{" "}
+                  {summary.total === 1 ? "entry" : "entries"} across{" "}
+                  <span className="font-medium">{summary.days}</span>{" "}
+                  {summary.days === 1 ? "day" : "days"}
+                  {span && <span className="text-ink-soft"> ({span})</span>}
+                </li>
+                <li className="text-ink-soft">
+                  {summary.byType.map((b) => `${b.n} ${b.label.toLowerCase()}`).join(", ")}
+                </li>
+                {summary.avgMood != null && (
+                  <li className="text-ink-soft">
+                    Mood noted on {summary.moodCount}{" "}
+                    {summary.moodCount === 1 ? "entry" : "entries"}, averaging{" "}
+                    {summary.avgMood}/5
+                  </li>
+                )}
+              </ul>
+            )}
+          </section>
+
+          {/* documents on file */}
+          {docs.length > 0 && (
+            <section className="keep border-b border-line py-5">
+              <h2 className="text-xs font-semibold uppercase tracking-[0.1em] text-ink-faint">
+                Documents on file
+              </h2>
+              <ul className="mt-2 space-y-1 text-sm text-ink-soft">
+                {docs.map((d) => (
+                  <li key={d.id}>
+                    {d.filename}
+                    <span className="text-ink-faint">
+                      {" "}
+                      — {DOC_CATEGORY[d.category] || d.category}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+              <p className="mt-1 text-xs text-ink-faint">
+                Held in {SITE.name}; not included in this printout.
+              </p>
+            </section>
+          )}
+
+          {/* entries */}
+          <section className="py-5">
+            <h2 className="text-xs font-semibold uppercase tracking-[0.1em] text-ink-faint">
+              Entries
+            </h2>
+            {shown.length === 0 ? (
+              <p className="mt-3 text-sm text-ink-faint">No entries in this range.</p>
+            ) : (
+              <div className="mt-3 divide-y divide-line">
                 {shown.map((log) => (
                   <div key={log.id} className="log-row grid grid-cols-[7rem_1fr] gap-4 py-3">
                     <div className="text-sm">
@@ -202,9 +350,7 @@ export default function ExportView() {
                       <div className="text-xs text-ink-faint">{logType(log.type).label}</div>
                     </div>
                     <div className="text-sm">
-                      {log.practiced_items && (
-                        <p className="text-ink">{log.practiced_items}</p>
-                      )}
+                      {log.practiced_items && <p className="text-ink">{log.practiced_items}</p>}
                       {log.notes && <p className="text-ink-soft">{log.notes}</p>}
                       {log.mood_rating != null && (
                         <p className="text-xs text-ink-faint">
