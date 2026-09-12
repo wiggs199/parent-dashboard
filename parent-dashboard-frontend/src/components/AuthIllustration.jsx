@@ -1,5 +1,5 @@
 // "Waypoint" — a calm line-art street that rises from the bottom of the
-// screen and narrows to the NovaPath mark at the vanishing point. Auth
+// screen and narrows to the AntAriPath mark at the vanishing point. Auth
 // screens only, behind the sign-in card. Pine line work (currentColor). A
 // paper wash fades the road out just where the card sits so it never
 // crosses the form. Theme-aware via tokens.

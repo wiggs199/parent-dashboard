@@ -13,6 +13,10 @@ load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 DEV_SECRET = "dev-only-insecure-secret-change-me"
 SECRET_KEY = os.getenv("SECRET_KEY", DEV_SECRET)
 
+# Brand name — mirrors src/siteConfig.js on the frontend. One place so a
+# rename (like NovaPath -> AntAriPath) doesn't need a string hunt.
+SITE_NAME = os.getenv("SITE_NAME", "AntAriPath")
+
 JWT_ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "1440"))  # 24h
 
@@ -33,7 +37,7 @@ FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173").rstrip("/")
 # Transactional email (Resend). Unset -> emails are logged, not sent, which
 # keeps local dev and tests offline.
 RESEND_API_KEY = os.getenv("RESEND_API_KEY", "")
-EMAIL_FROM = os.getenv("EMAIL_FROM", "NovaPath <onboarding@resend.dev>")
+EMAIL_FROM = os.getenv("EMAIL_FROM", f"{SITE_NAME} <onboarding@resend.dev>")
 
 VERIFY_TOKEN_EXPIRE_HOURS = int(os.getenv("VERIFY_TOKEN_EXPIRE_HOURS", "168"))  # 7 days
 RESET_TOKEN_EXPIRE_MINUTES = int(os.getenv("RESET_TOKEN_EXPIRE_MINUTES", "60"))

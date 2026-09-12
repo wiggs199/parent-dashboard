@@ -7,9 +7,9 @@ import logging
 
 import httpx
 
-from app.config import EMAIL_FROM, FRONTEND_URL, RESEND_API_KEY
+from app.config import EMAIL_FROM, FRONTEND_URL, RESEND_API_KEY, SITE_NAME
 
-log = logging.getLogger("novapath.email")
+log = logging.getLogger("mailer")
 
 _RESEND_ENDPOINT = "https://api.resend.com/emails"
 
@@ -38,7 +38,7 @@ def _shell(body: str) -> str:
         'max-width:520px;margin:0 auto;color:#333f3a;line-height:1.5">'
         f"{body}"
         '<p style="color:#97a09b;font-size:12px;margin-top:32px">'
-        "NovaPath — an organizational support tool. Not therapy, diagnosis, or evaluation."
+        f"{SITE_NAME} — an organizational support tool. Not therapy, diagnosis, or evaluation."
         "</p></div>"
     )
 
@@ -57,13 +57,13 @@ def send_welcome_and_verify(to: str, name: str, verify_token: str) -> None:
     greeting = f"Hi {name}," if name else "Hi,"
     _send(
         to,
-        "Welcome to NovaPath — confirm your email",
+        f"Welcome to {SITE_NAME} — confirm your email",
         _shell(
             f"<p>{greeting}</p>"
-            "<p>Your NovaPath account is ready. Confirm your email address so you can "
+            f"<p>Your {SITE_NAME} account is ready. Confirm your email address so you can "
             "recover your account later if you need to.</p>"
             + _button(url, "Confirm email")
-            + "<p>You can start using NovaPath right away — this just keeps your "
+            + f"<p>You can start using {SITE_NAME} right away — this just keeps your "
             "account recoverable.</p>"
         ),
     )
@@ -73,7 +73,7 @@ def send_verify(to: str, verify_token: str) -> None:
     url = f"{FRONTEND_URL}/verify-email?token={verify_token}"
     _send(
         to,
-        "Confirm your NovaPath email",
+        f"Confirm your {SITE_NAME} email",
         _shell("<p>Confirm your email address:</p>" + _button(url, "Confirm email")),
     )
 
@@ -82,9 +82,9 @@ def send_password_reset(to: str, reset_token: str) -> None:
     url = f"{FRONTEND_URL}/reset-password?token={reset_token}"
     _send(
         to,
-        "Reset your NovaPath password",
+        f"Reset your {SITE_NAME} password",
         _shell(
-            "<p>Someone asked to reset the password for this NovaPath account. "
+            f"<p>Someone asked to reset the password for this {SITE_NAME} account. "
             "If that was you, choose a new password:</p>"
             + _button(url, "Reset password")
             + "<p>This link expires in about an hour. If you didn't ask for this, "

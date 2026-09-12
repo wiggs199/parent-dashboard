@@ -1,4 +1,4 @@
-// The NovaPath mark — a soft four-point star. Threads through the logo,
+// The AntAriPath mark — a soft four-point star. Threads through the logo,
 // the log timeline, and empty states.
 export default function NovaMark({ size = 20, className = "" }) {
   return (

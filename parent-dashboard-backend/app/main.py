@@ -4,7 +4,7 @@ from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 
 from app import auth
-from app.config import CORS_ORIGINS, SENTRY_DSN, assert_production_config
+from app.config import CORS_ORIGINS, SENTRY_DSN, SITE_NAME, assert_production_config
 from app.observability import init_sentry
 from app.ratelimit import limiter
 from app.routes import children, documents, exploration_tips, logs
@@ -18,7 +18,7 @@ init_sentry()
 # Schema is managed by Alembic — run `alembic upgrade head` (locally and as
 # the Render pre-deploy command). No create_all here.
 
-app = FastAPI(title="NovaPath API")
+app = FastAPI(title=f"{SITE_NAME} API")
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
