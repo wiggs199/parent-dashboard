@@ -3,7 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
 import { errorMessage } from "../api/client";
 import AuthShell from "../components/AuthShell";
-import { Button, TextInput, Field, Alert } from "../components/ui";
+import { Button, TextInput, PasswordInput, Field, Alert } from "../components/ui";
 
 export default function Signup() {
   const { signup } = useAuth();
@@ -85,8 +85,7 @@ export default function Signup() {
           />
         </Field>
         <Field label="Password" hint="At least 8 characters">
-          <TextInput
-            type="password"
+          <PasswordInput
             required
             autoComplete="new-password"
             value={password}
@@ -94,8 +93,7 @@ export default function Signup() {
           />
         </Field>
         <Field label="Confirm password">
-          <TextInput
-            type="password"
+          <PasswordInput
             required
             autoComplete="new-password"
             value={passwordConfirm}

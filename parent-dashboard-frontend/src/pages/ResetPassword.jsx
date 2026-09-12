@@ -4,7 +4,7 @@ import { resetPassword } from "../api/resources";
 import { errorMessage } from "../api/client";
 import { useAuth } from "../auth/AuthContext";
 import AuthShell from "../components/AuthShell";
-import { Button, TextInput, Field, Alert } from "../components/ui";
+import { Button, PasswordInput, Field, Alert } from "../components/ui";
 
 export default function ResetPassword() {
   const [params] = useSearchParams();
@@ -52,8 +52,7 @@ export default function ResetPassword() {
         <form onSubmit={handleSubmit} className="space-y-4">
           {error && <Alert>{error}</Alert>}
           <Field label="New password" hint="At least 8 characters">
-            <TextInput
-              type="password"
+            <PasswordInput
               required
               autoComplete="new-password"
               value={password}
@@ -61,8 +60,7 @@ export default function ResetPassword() {
             />
           </Field>
           <Field label="Confirm new password">
-            <TextInput
-              type="password"
+            <PasswordInput
               required
               autoComplete="new-password"
               value={confirm}

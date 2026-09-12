@@ -3,7 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
 import { errorMessage } from "../api/client";
 import AuthShell from "../components/AuthShell";
-import { Button, TextInput, Field, Alert } from "../components/ui";
+import { Button, TextInput, PasswordInput, Field, Alert } from "../components/ui";
 
 export default function Login() {
   const { login } = useAuth();
@@ -52,8 +52,7 @@ export default function Login() {
           />
         </Field>
         <Field label="Password">
-          <TextInput
-            type="password"
+          <PasswordInput
             required
             autoComplete="current-password"
             value={password}
