@@ -1,9 +1,10 @@
-from typing import List
+from typing import List, Optional
 
-from fastapi import APIRouter, Depends, Response
+from fastapi import APIRouter, Depends, HTTPException, Query, Response
 from sqlalchemy.orm import Session
 
 from app import models, schemas
+from app.ai import AIUnavailable, generate_activity_summary
 from app.database import get_db
 from app.deps import get_owned_child_or_404, get_owned_log_or_404
 from app.security import get_current_parent
@@ -69,10 +70,44 @@ def delete_log(
 
 
 @router.get("/summary/{child_id}")
-def mock_summary(
+def get_summary(
     child_id: int,
+    date_from: Optional[str] = Query(None, alias="from"),
+    date_to: Optional[str] = Query(None, alias="to"),
+    types: Optional[str] = Query(None, description="comma-separated log types"),
     db: Session = Depends(get_db),
     parent: models.Parent = Depends(get_current_parent),
 ):
-    get_owned_child_or_404(child_id, parent, db)
-    return {"summary": "This is a placeholder summary of your child's logs."}
+    """On-demand AI summary of a child's logs, filtered the same way the
+    export page is. Never called automatically — the parent asks for it."""
+    child = get_owned_child_or_404(child_id, parent, db)
+
+    q = db.query(models.LogEntry).filter(models.LogEntry.child_id == child_id)
+    if date_from:
+        q = q.filter(models.LogEntry.date >= date_from)
+    if date_to:
+        q = q.filter(models.LogEntry.date <= date_to)
+    if types:
+        wanted = [t.strip() for t in types.split(",") if t.strip()]
+        if wanted:
+            q = q.filter(models.LogEntry.type.in_(wanted))
+
+    logs = q.order_by(models.LogEntry.date.asc(), models.LogEntry.id.asc()).all()
+    entries = [
+        {
+            "date": str(log.date),
+            "type": log.type,
+            "time_of_day": log.time_of_day,
+            "mood_rating": log.mood_rating,
+            "practiced_items": log.practiced_items,
+            "notes": log.notes,
+        }
+        for log in logs
+    ]
+
+    try:
+        summary = generate_activity_summary(child.name, entries)
+    except AIUnavailable:
+        raise HTTPException(status_code=503, detail="AI summary isn't set up yet.")
+
+    return {"summary": summary}

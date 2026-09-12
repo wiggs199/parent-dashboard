@@ -30,6 +30,12 @@ export const updateLog = (id, payload) =>
   client.patch(`/logs/${id}`, payload).then((r) => r.data);
 export const deleteLog = (id) => client.delete(`/logs/${id}`);
 
+// On-demand AI summary — same range/type filters as the export page.
+export const getLogSummary = (childId, { from, to, types } = {}) =>
+  client
+    .get(`/logs/summary/${childId}`, { params: { from, to, types } })
+    .then((r) => r.data);
+
 // Documents
 export const listDocuments = (childId) =>
   client.get(`/documents/child/${childId}`).then((r) => r.data);

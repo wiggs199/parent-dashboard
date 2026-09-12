@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { Printer, ArrowLeft } from "lucide-react";
-import { getChild, listLogs, listDocuments } from "../api/resources";
+import { Printer, ArrowLeft, Sparkles } from "lucide-react";
+import { getChild, listLogs, listDocuments, getLogSummary } from "../api/resources";
 import { errorMessage } from "../api/client";
 import { ageLabel } from "../lib/child";
 import { LOG_TYPES, logType, mood as moodMeta, timeOfDay, timeOfDayRank } from "../lib/log";
@@ -42,6 +42,11 @@ export default function ExportView() {
   // which types are included — all on by default
   const [types, setTypes] = useState(() => new Set(LOG_TYPES.map((t) => t.value)));
 
+  // AI summary — on-demand only, never generated automatically.
+  const [aiStatus, setAiStatus] = useState("idle"); // idle | loading | ok | error
+  const [aiText, setAiText] = useState("");
+  const [aiError, setAiError] = useState("");
+
   useEffect(() => {
     let cancelled = false;
     Promise.all([getChild(id), listLogs(id), listDocuments(id).catch(() => [])])
@@ -62,6 +67,13 @@ export default function ExportView() {
     };
   }, [id]);
 
+  // A stale AI summary shouldn't linger once the filters it described change.
+  const resetAiSummary = () => {
+    setAiStatus("idle");
+    setAiText("");
+    setAiError("");
+  };
+
   const applyPreset = (key) => {
     setPreset(key);
     const p = RANGE_PRESETS.find((x) => x.key === key);
@@ -69,15 +81,36 @@ export default function ExportView() {
       const { from: f, to: t } = p.range();
       setFrom(f);
       setTo(t);
+      resetAiSummary();
     }
   };
 
-  const toggleType = (value) =>
+  const toggleType = (value) => {
     setTypes((prev) => {
       const next = new Set(prev);
       next.has(value) ? next.delete(value) : next.add(value);
       return next;
     });
+    resetAiSummary();
+  };
+
+  const generateAiSummary = async () => {
+    setAiStatus("loading");
+    setAiError("");
+    try {
+      const allTypesSelected = types.size === LOG_TYPES.length;
+      const { summary } = await getLogSummary(id, {
+        from: from || undefined,
+        to: to || undefined,
+        types: allTypesSelected ? undefined : [...types].join(","),
+      });
+      setAiText(summary);
+      setAiStatus("ok");
+    } catch (err) {
+      setAiError(errorMessage(err, "Couldn't generate a summary. Please try again."));
+      setAiStatus("error");
+    }
+  };
 
   const shown = useMemo(() => {
     return logs
@@ -197,6 +230,7 @@ export default function ExportView() {
                 onChange={(e) => {
                   setFrom(e.target.value);
                   setPreset("custom");
+                  resetAiSummary();
                 }}
                 className="rounded border border-line-strong bg-surface px-1.5 py-1 text-xs"
               />
@@ -209,6 +243,7 @@ export default function ExportView() {
                 onChange={(e) => {
                   setTo(e.target.value);
                   setPreset("custom");
+                  resetAiSummary();
                 }}
                 className="rounded border border-line-strong bg-surface px-1.5 py-1 text-xs"
               />
@@ -303,6 +338,40 @@ export default function ExportView() {
                   </li>
                 )}
               </ul>
+            )}
+
+            {aiStatus === "idle" && summary.total > 0 && (
+              <button
+                onClick={generateAiSummary}
+                className="no-print mt-3 inline-flex items-center gap-1.5 rounded-full border border-line-strong px-3 py-1.5 text-xs font-medium text-ink-soft hover:border-pine hover:text-pine-dark"
+              >
+                <Sparkles size={13} /> Generate AI summary
+              </button>
+            )}
+            {aiStatus === "loading" && (
+              <p className="no-print mt-3 text-xs text-ink-faint">Writing a summary…</p>
+            )}
+            {aiStatus === "error" && (
+              <div className="no-print mt-3 flex flex-wrap items-center gap-2">
+                <p className="text-xs text-persimmon">{aiError}</p>
+                <button
+                  onClick={generateAiSummary}
+                  className="text-xs font-medium text-pine-dark hover:underline"
+                >
+                  Try again
+                </button>
+              </div>
+            )}
+            {aiStatus === "ok" && (
+              <div className="keep mt-3 rounded-lg border border-line bg-surface-sunk px-4 py-3">
+                <p className="text-[0.65rem] font-semibold uppercase tracking-[0.1em] text-pine-dark">
+                  AI-generated summary
+                </p>
+                <p className="mt-1.5 text-sm text-ink">{aiText}</p>
+                <p className="mt-1.5 text-xs text-ink-faint">
+                  Describes patterns in what was logged. Not a clinical assessment.
+                </p>
+              </div>
             )}
           </section>
 

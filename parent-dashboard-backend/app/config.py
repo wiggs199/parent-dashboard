@@ -51,6 +51,10 @@ MAX_UPLOAD_BYTES = int(os.getenv("MAX_UPLOAD_BYTES", str(10 * 1024 * 1024)))  # 
 # phone home.
 SENTRY_DSN = os.getenv("SENTRY_DSN", "")
 
+# AI activity summary (Anthropic). Unset -> the summary endpoint returns 503
+# instead of silently faking a summary.
+ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
+
 
 def _normalize_db_url(raw: str) -> str:
     """Accept the URL shapes hosts hand out and target the psycopg v3 driver.
