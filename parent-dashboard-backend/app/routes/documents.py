@@ -8,6 +8,7 @@ from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 
 from app import models, schemas, storage
+from app.ai import AIUnavailable, UnsupportedDocument, extract_document_fields
 from app.config import ENV, MAX_UPLOAD_BYTES
 from app.database import get_db
 from app.deps import get_owned_child_or_404, get_owned_document_or_404
@@ -127,6 +128,25 @@ def download_document(
         media_type=doc.content_type or "application/octet-stream",
         headers={"Content-Disposition": disposition},
     )
+
+
+@router.post("/{doc_id}/extract")
+def extract_document(
+    doc_id: int,
+    db: Session = Depends(get_db),
+    parent: models.Parent = Depends(get_current_parent),
+):
+    """On-demand only — never run automatically on upload. Reads the file
+    fresh each call rather than caching, since it's just a display aid, not
+    something saved as part of the record."""
+    doc = get_owned_document_or_404(doc_id, parent, db)
+    file_bytes = b"".join(storage.open_stream(doc.storage_key))
+    try:
+        return extract_document_fields(file_bytes, doc.content_type or "")
+    except AIUnavailable:
+        raise HTTPException(status_code=503, detail="AI extraction isn't set up yet.")
+    except UnsupportedDocument as e:
+        raise HTTPException(status_code=422, detail=str(e))
 
 
 @router.delete("/{doc_id}", status_code=204)

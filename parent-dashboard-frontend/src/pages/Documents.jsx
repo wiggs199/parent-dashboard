@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { FolderClosed, Download, Trash2, Upload, Pencil } from "lucide-react";
+import { FolderClosed, Download, Trash2, Upload, Pencil, Sparkles, X } from "lucide-react";
 import PageHeader from "../components/PageHeader";
 import { Card, Button, Select, TextInput, Alert, EmptyState, Field } from "../components/ui";
 import FilePreview from "../components/FilePreview";
@@ -11,8 +11,15 @@ import {
   updateDocument,
   deleteDocument,
   downloadDocument,
+  extractDocument,
 } from "../api/resources";
 import { errorMessage } from "../api/client";
+
+const DOC_TYPE_LABEL = {
+  iep: "IEP",
+  insurance_letter: "Insurance letter",
+  other: "Document",
+};
 
 const MAX_BYTES = 10 * 1024 * 1024;
 
@@ -44,6 +51,10 @@ function DocRow({ doc, onRename, onDelete, onDownload }) {
   const [name, setName] = useState(doc.filename);
   const [busy, setBusy] = useState(false);
 
+  const [extractStatus, setExtractStatus] = useState("idle"); // idle | loading | ok | error
+  const [extractResult, setExtractResult] = useState(null);
+  const [extractError, setExtractError] = useState("");
+
   const save = async (e) => {
     e.preventDefault();
     const trimmed = name.trim();
@@ -57,9 +68,23 @@ function DocRow({ doc, onRename, onDelete, onDownload }) {
     }
   };
 
+  const runExtract = async () => {
+    setExtractStatus("loading");
+    setExtractError("");
+    try {
+      const result = await extractDocument(doc.id);
+      setExtractResult(result);
+      setExtractStatus("ok");
+    } catch (err) {
+      setExtractError(errorMessage(err, "Couldn't read this document. Please try again."));
+      setExtractStatus("error");
+    }
+  };
+
   return (
-    <div className="flex items-center gap-3 p-4">
-      <FolderClosed size={18} className="shrink-0 text-ink-faint" />
+    <div className="p-4">
+      <div className="flex items-center gap-3">
+        <FolderClosed size={18} className="shrink-0 text-ink-faint" />
       {editing ? (
         <form onSubmit={save} className="flex flex-1 items-center gap-2">
           <TextInput
@@ -96,6 +121,15 @@ function DocRow({ doc, onRename, onDelete, onDownload }) {
             )}
           </div>
           <button
+            onClick={runExtract}
+            disabled={extractStatus === "loading"}
+            aria-label={`Extract details from ${doc.filename}`}
+            title="Extract details with AI"
+            className="rounded-md p-1.5 text-ink-faint hover:bg-pine-soft hover:text-pine-dark disabled:opacity-50"
+          >
+            <Sparkles size={15} />
+          </button>
+          <button
             onClick={() => setEditing(true)}
             aria-label={`Rename ${doc.filename}`}
             className="rounded-md p-1.5 text-ink-faint hover:bg-surface-sunk hover:text-ink"
@@ -117,6 +151,53 @@ function DocRow({ doc, onRename, onDelete, onDownload }) {
             <Trash2 size={16} />
           </button>
         </>
+      )}
+    </div>
+
+      {extractStatus === "loading" && (
+        <p className="mt-2 text-xs text-ink-faint">Reading the document…</p>
+      )}
+      {extractStatus === "error" && (
+        <div className="mt-2 flex flex-wrap items-center gap-2">
+          <p className="text-xs text-persimmon">{extractError}</p>
+          <button onClick={runExtract} className="text-xs font-medium text-pine-dark hover:underline">
+            Try again
+          </button>
+        </div>
+      )}
+      {extractStatus === "ok" && extractResult && (
+        <div className="mt-2 rounded-lg border border-line bg-surface-sunk px-4 py-3">
+          <div className="flex items-start justify-between gap-2">
+            <p className="text-[0.65rem] font-semibold uppercase tracking-[0.1em] text-pine-dark">
+              AI-extracted · {DOC_TYPE_LABEL[extractResult.document_type] || "Document"}
+            </p>
+            <button
+              onClick={() => setExtractStatus("idle")}
+              aria-label="Dismiss extracted details"
+              className="text-ink-faint hover:text-ink"
+            >
+              <X size={14} />
+            </button>
+          </div>
+          {extractResult.fields?.length > 0 ? (
+            <dl className="mt-2 space-y-1 text-sm">
+              {extractResult.fields.map((f, i) => (
+                <div key={i} className="flex flex-wrap gap-x-1.5">
+                  <dt className="font-medium text-ink">{f.label}:</dt>
+                  <dd className="text-ink-soft">{f.value}</dd>
+                </div>
+              ))}
+            </dl>
+          ) : (
+            <p className="mt-2 text-sm text-ink-faint">No fields confidently extracted.</p>
+          )}
+          {extractResult.note && (
+            <p className="mt-2 text-xs italic text-ink-faint">{extractResult.note}</p>
+          )}
+          <p className="mt-2 text-xs text-ink-faint">
+            Read automatically from the file — check against the original.
+          </p>
+        </div>
       )}
     </div>
   );

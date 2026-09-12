@@ -104,3 +104,36 @@ def test_rename_respects_ownership(ready_child, auth_headers):
     b = auth_headers(email="b@example.com")
     doc = upload(client, a, c["id"]).json()
     assert client.patch(f"/documents/{doc['id']}", json={"filename": "x"}, headers=b).status_code == 404
+
+
+def test_extract_503_without_api_key(ready_child):
+    """No ANTHROPIC_API_KEY configured (the default in dev/CI) -> a clear
+    503 instead of a fake or silent extraction."""
+    client, a, c = ready_child
+    doc = upload(client, a, c["id"]).json()
+    assert client.post(f"/documents/{doc['id']}/extract", headers=a).status_code == 503
+
+
+def test_extract_respects_ownership(ready_child, auth_headers):
+    client, a, c = ready_child
+    b = auth_headers(email="b@example.com")
+    doc = upload(client, a, c["id"]).json()
+    assert client.post(f"/documents/{doc['id']}/extract", headers=b).status_code == 404
+
+
+def test_extract_rejects_unreadable_file_type(ready_child, monkeypatch):
+    """A configured key but an unsupported file type -> 422, not a 503."""
+    import app.ai as ai
+
+    monkeypatch.setattr(ai, "ANTHROPIC_API_KEY", "fake-key-for-test")
+
+    client, a, c = ready_child
+    doc = client.post(
+        "/documents",
+        data={"child_id": c["id"], "category": "other"},
+        files={"file": ("notes.txt", io.BytesIO(b"plain text"), "text/plain")},
+        headers=a,
+    ).json()
+
+    r = client.post(f"/documents/{doc['id']}/extract", headers=a)
+    assert r.status_code == 422

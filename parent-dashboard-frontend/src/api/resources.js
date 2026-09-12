@@ -54,6 +54,10 @@ export const updateDocument = (id, patch) =>
 
 export const deleteDocument = (id) => client.delete(`/documents/${id}`);
 
+// On-demand AI extraction — never run automatically on upload.
+export const extractDocument = (id) =>
+  client.post(`/documents/${id}/extract`).then((r) => r.data);
+
 // Fetches the blob (auth header attached) and prompts the browser to save it.
 export async function downloadDocument(id, filename) {
   const res = await client.get(`/documents/${id}/download`, { responseType: "blob" });
