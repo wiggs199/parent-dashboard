@@ -9,7 +9,7 @@ services:
   - type: web
     name: parent-dashboard-api
     runtime: python
-    plan: free
+    plan: starter          # $7/mo, 0.5 CPU / 512MB — off the free tier 2026-09-12, no more cold-start sleep
     region: ohio          # match the Neon database region (AWS us-east-2)
     rootDir: parent-dashboard-backend
     buildCommand: pip install -r requirements.txt
@@ -27,12 +27,15 @@ services:
       - key: DATABASE_URL
         sync: false                   # paste the Neon connection string
       - key: CORS_ORIGINS
-        sync: false                   # e.g. https://parent-dashboard.wiggs199.workers.dev
+        sync: false                   # https://novapath.care,https://www.novapath.care,https://parent-dashboard.wiggs199.workers.dev
       - key: FRONTEND_URL
-        sync: false                   # same URL — used for links in emails
+        sync: false                   # https://novapath.care — used for links in emails
       - key: RESEND_API_KEY
         sync: false                   # from resend.com; blank = emails logged not sent
       - key: EMAIL_FROM
+        # novapath.care verified in Resend 2026-09-12 — set to
+        # "NovaPath <hello@novapath.care>" (or your chosen sending address)
+        # on the dashboard; this default is just the pre-domain fallback.
         value: "NovaPath <onboarding@resend.dev>"
       - key: R2_ENDPOINT
         sync: false                   # https://<account-id>.r2.cloudflarestorage.com
@@ -46,3 +49,5 @@ services:
         sync: false                   # from sentry.io; blank = disabled
       - key: ACCESS_TOKEN_EXPIRE_MINUTES
         value: "1440"
+      - key: ANTHROPIC_API_KEY
+        sync: false                   # from console.anthropic.com; blank = AI summary endpoint disabled
