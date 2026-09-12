@@ -4,7 +4,7 @@ export const SITE = {
   name: "AntAriPath",
   tagline: "One calm place for what you're already doing",
   // Shown on the Privacy and Terms pages. Use a real address you monitor.
-  contactEmail: "novapathapp@gmail.com",
+  contactEmail: "antaripathapp@gmail.com",
   // Used in the Terms "governing law" clause.
   jurisdiction: "the State of New York, USA",
 };
