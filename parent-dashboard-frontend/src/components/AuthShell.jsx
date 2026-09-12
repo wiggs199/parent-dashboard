@@ -1,17 +1,20 @@
 import { Link } from "react-router-dom";
 import { SITE } from "../siteConfig";
 import NovaMark from "./NovaMark";
+import AuthIllustration from "./AuthIllustration";
 
 export default function AuthShell({ title, subtitle, children, footer }) {
   return (
     <div
-      className="flex min-h-screen items-center justify-center bg-paper px-4 py-10"
+      className="relative flex min-h-screen items-center justify-center overflow-hidden bg-paper px-4 py-10"
       style={{
         backgroundImage:
           "radial-gradient(70% 45% at 50% -5%, color-mix(in srgb, var(--color-pine) 12%, transparent), transparent)",
       }}
     >
-      <div className="w-full max-w-sm">
+      <AuthIllustration />
+
+      <div className="relative z-10 w-full max-w-sm -translate-y-6 sm:-translate-y-10">
         <div className="mb-6 flex flex-col items-center gap-2 text-center">
           <span className="grid h-11 w-11 place-items-center rounded-2xl bg-pine text-white shadow-[var(--shadow-btn)]">
             <NovaMark size={20} />
