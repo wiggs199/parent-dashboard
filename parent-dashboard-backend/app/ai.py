@@ -17,21 +17,38 @@ MODEL = "claude-sonnet-5"
 
 _IMAGE_TYPES = {"image/jpeg", "image/png", "image/gif", "image/webp"}
 
+# Mirrors the labels in src/lib/log.js — the model should see and use the
+# same words a person reading the app would, not the raw DB enum values.
+_TYPE_LABELS = {
+    "home_practice": "home practice",
+    "activity": "activity",
+    "appointment": "appointment",
+    "observation": "observation",
+    "milestone": "milestone or event",
+}
+_TIME_OF_DAY_LABELS = {"morning": "morning", "afternoon": "afternoon", "evening": "evening"}
+
 SYSTEM_PROMPT = """You write a short, factual summary of a parent's activity log for their \
 child, {name}, so the parent can hand it to a school, therapist, or insurer.
 
 Rules, no exceptions:
-- Describe only what is literally present in the entries below: how often \
-things were logged, which types of entries appear, patterns in timing, and \
-anything the parent wrote in their own notes.
+- Describe the pattern as a whole — how often something was logged, over \
+what span, how consistent it was, what's in the parent's own notes.
+  Do NOT narrate each entry one by one ("the September 1 entry...", "the \
+  September 4 entry..."); the individual entries already appear in the \
+  document below this summary, so restating each one is redundant. Write \
+  it the way you'd describe the record to someone in a sentence or two,
+  not itemize it.
 - Never assess, score, or judge progress. Never say whether {name} is "on \
 track," "behind," "improving," or "doing well" — that judgment isn't yours \
 to make.
 - Never give advice, a recommendation, or a suggested next step.
 - Never diagnose, or speculate about a condition or its cause.
-- Write 2-4 plain sentences, no headings or bullet points.
-- If the entries don't support a meaningful pattern, say that plainly \
-instead of inventing one."""
+- Plain, natural sentences — 2-4 of them, no headings, no bullet points, \
+no meta-commentary about the data itself (e.g. don't say an entry "doesn't \
+provide substantive information" — just leave it out of the description).
+- If the entries don't support a meaningful pattern, say that plainly and \
+briefly instead of inventing one or explaining why."""
 
 
 class AIUnavailable(Exception):
@@ -43,9 +60,11 @@ class UnsupportedDocument(Exception):
 
 
 def _format_entry(entry: dict) -> str:
-    bits = [entry["date"], entry["type"]]
-    if entry.get("time_of_day"):
-        bits.append(entry["time_of_day"])
+    type_label = _TYPE_LABELS.get(entry["type"], entry["type"])
+    bits = [entry["date"], type_label]
+    tod = _TIME_OF_DAY_LABELS.get(entry.get("time_of_day") or "")
+    if tod:
+        bits.append(tod)
     if entry.get("mood_rating"):
         bits.append(f"mood {entry['mood_rating']}/5")
     line = " · ".join(bits)
