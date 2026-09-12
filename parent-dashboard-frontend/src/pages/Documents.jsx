@@ -419,8 +419,8 @@ export default function Documents() {
             <p className="text-sm text-ink-soft">Loading…</p>
           ) : docs.length === 0 ? (
             <EmptyState icon={FolderClosed} title="No documents yet">
-              Upload the therapist reports, IEP paperwork, and insurance letters
-              you want to keep with {activeChild?.name}.
+              Upload important documents you want to keep with {activeChild?.name},
+              such as therapist reports, IEP paperwork, and insurance letters.
             </EmptyState>
           ) : (
             <Card elevated className="divide-y divide-line">
