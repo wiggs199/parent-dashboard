@@ -3,10 +3,14 @@ import { SITE } from "../siteConfig";
 import NovaMark from "./NovaMark";
 import AuthIllustration from "./AuthIllustration";
 
+const TAGLINE =
+  "A calm place to log the day-to-day: appointments, notes, and what you're noticing. Pull it all together whenever you need to share it.";
+
 // Split layout: a quiet brand panel (mark, tagline, the street illustration)
-// on the left, the actual form on the right. The brand panel is desktop
-// only — on a narrow screen it collapses to a small header so a tall form
-// (looking at you, Signup) never has to compete with it for space.
+// on the left, the actual form on the right. The illustration is desktop
+// only — on a narrow screen it drops out so a tall form (looking at you,
+// Signup) never has to compete with it for space — but the tagline itself
+// still shows on mobile, just as plain text under the mark.
 export default function AuthShell({ title, subtitle, children, footer }) {
   return (
     <div className="min-h-screen bg-surface md:grid md:grid-cols-2">
@@ -22,20 +26,21 @@ export default function AuthShell({ title, subtitle, children, footer }) {
           </span>
         </div>
         <p className="relative z-10 mt-auto max-w-xs pt-16 font-display text-xl font-medium leading-snug text-ink">
-          A calm place to log the day-to-day — appointments, notes, what
-          you&rsquo;re noticing — and pull it all together whenever you need
-          to share it.
+          {TAGLINE}
         </p>
       </div>
 
-      {/* Mobile header — no illustration, just the mark */}
-      <div className="flex flex-col items-center gap-2 px-4 pt-10 text-center md:hidden">
+      {/* Mobile header — no illustration, but the tagline still shows */}
+      <div className="flex flex-col items-center gap-2 px-6 pt-10 text-center md:hidden">
         <span className="grid h-11 w-11 place-items-center rounded-2xl bg-pine text-white shadow-[var(--shadow-btn)]">
           <NovaMark size={20} />
         </span>
         <span className="text-xs font-semibold uppercase tracking-[0.14em] text-ink-soft">
           {SITE.name}
         </span>
+        <p className="mt-1 max-w-xs font-display text-base font-medium leading-snug text-ink-soft">
+          {TAGLINE}
+        </p>
       </div>
 
       {/* Form panel */}
