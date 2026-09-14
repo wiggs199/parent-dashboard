@@ -45,7 +45,6 @@ export default function Signup() {
   return (
     <AuthShell
       title="Create your account"
-      subtitle="One place for logs, documents, and notes"
       footer={
         <>
           Already have an account?{" "}
