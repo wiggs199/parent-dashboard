@@ -30,15 +30,18 @@ export default function AuthShell({ title, subtitle, children, footer }) {
         </p>
       </div>
 
-      {/* Mobile header — no illustration, but the tagline still shows */}
-      <div className="flex flex-col items-center gap-2 px-6 pt-10 text-center md:hidden">
+      {/* Mobile header — a small, self-contained version of the illustration
+          (own fixed height, plain document flow) instead of the full-bleed
+          desktop one, so it can never overlap or fight the form below it */}
+      <div className="flex flex-col items-center gap-2 px-6 pt-8 text-center md:hidden">
         <span className="grid h-11 w-11 place-items-center rounded-2xl bg-pine text-white shadow-[var(--shadow-btn)]">
           <NovaMark size={20} />
         </span>
         <span className="text-xs font-semibold uppercase tracking-[0.14em] text-ink-soft">
           {SITE.name}
         </span>
-        <p className="mt-1 max-w-xs font-display text-base font-medium leading-snug text-ink-soft">
+        <AuthIllustration compact />
+        <p className="max-w-xs font-display text-base font-medium leading-snug text-ink-soft">
           {TAGLINE}
         </p>
       </div>
