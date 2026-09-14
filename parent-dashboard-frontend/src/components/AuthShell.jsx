@@ -4,7 +4,7 @@ import NovaMark from "./NovaMark";
 import AuthIllustration from "./AuthIllustration";
 
 const TAGLINE =
-  "A calm place to log the day-to-day: appointments, notes, and what you're noticing. Pull it all together whenever you need to share it.";
+  "A calm place to log the day-to-day: appointments, notes, reports, and what you're noticing. Pull it all together whenever you need to share it.";
 
 export default function AuthShell({ title, subtitle, children, footer }) {
   return (
