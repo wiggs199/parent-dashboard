@@ -9,7 +9,6 @@ import ChildProfile from "./pages/ChildProfile";
 import ExportView from "./pages/ExportView";
 import Logs from "./pages/Logs";
 import Documents from "./pages/Documents";
-import AISummary from "./pages/AISummary";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import ForgotPassword from "./pages/ForgotPassword";
@@ -53,7 +52,6 @@ export default function App() {
           />
           <Route path="/logs" element={<Protected><Logs /></Protected>} />
           <Route path="/documents" element={<Protected><Documents /></Protected>} />
-          <Route path="/ai-summary" element={<Protected><AISummary /></Protected>} />
 
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

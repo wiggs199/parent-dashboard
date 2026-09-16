@@ -69,8 +69,3 @@ centered column in `AppLayout`.
 | `src/pages/Documents` | upload/list/download/delete per child, with on-demand AI extraction |
 | `src/pages/ExportView` | the print/PDF report — range presets, type filters, summary, on-demand AI summary |
 | `src/pages/About,Privacy,Terms` | public/legal pages |
-
-`src/pages/AISummary.jsx` (route `/ai-summary`) is an older placeholder
-page, not linked from the sidebar nav — the real AI summary now lives
-inside `ExportView`. Worth removing or repurposing rather than leaving it
-orphaned.
