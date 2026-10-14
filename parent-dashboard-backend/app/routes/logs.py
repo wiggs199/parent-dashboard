@@ -1,12 +1,13 @@
 from typing import List, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Response
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response
 from sqlalchemy.orm import Session
 
 from app import models, schemas
 from app.ai import AIUnavailable, generate_activity_summary
 from app.database import get_db
 from app.deps import get_owned_child_or_404, get_owned_log_or_404
+from app.ratelimit import limiter
 from app.security import get_current_parent
 
 router = APIRouter()
@@ -70,7 +71,9 @@ def delete_log(
 
 
 @router.get("/summary/{child_id}")
+@limiter.limit("20/hour")
 def get_summary(
+    request: Request,
     child_id: int,
     date_from: Optional[str] = Query(None, alias="from"),
     date_to: Optional[str] = Query(None, alias="to"),
@@ -79,7 +82,9 @@ def get_summary(
     parent: models.Parent = Depends(get_current_parent),
 ):
     """On-demand AI summary of a child's logs, filtered the same way the
-    export page is. Never called automatically — the parent asks for it."""
+    export page is. Never called automatically — the parent asks for it.
+    Rate-limited: it's a real (small) Anthropic cost per call, behind auth
+    but open to anyone who signs up."""
     child = get_owned_child_or_404(child_id, parent, db)
 
     q = db.query(models.LogEntry).filter(models.LogEntry.child_id == child_id)

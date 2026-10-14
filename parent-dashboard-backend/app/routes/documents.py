@@ -3,7 +3,7 @@ from typing import List, Optional
 from urllib.parse import quote, unquote
 import uuid
 
-from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, UploadFile
 from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 
@@ -12,6 +12,7 @@ from app.ai import AIUnavailable, UnsupportedDocument, extract_document_fields
 from app.config import ENV, MAX_UPLOAD_BYTES
 from app.database import get_db
 from app.deps import get_owned_child_or_404, get_owned_document_or_404
+from app.ratelimit import limiter
 from app.security import get_current_parent
 
 router = APIRouter()
@@ -131,14 +132,17 @@ def download_document(
 
 
 @router.post("/{doc_id}/extract")
+@limiter.limit("15/hour")
 def extract_document(
+    request: Request,
     doc_id: int,
     db: Session = Depends(get_db),
     parent: models.Parent = Depends(get_current_parent),
 ):
     """On-demand only — never run automatically on upload. Reads the file
     fresh each call rather than caching, since it's just a display aid, not
-    something saved as part of the record."""
+    something saved as part of the record. Rate-limited: a real (small)
+    Anthropic cost per call, behind auth but open to anyone who signs up."""
     doc = get_owned_document_or_404(doc_id, parent, db)
     file_bytes = b"".join(storage.open_stream(doc.storage_key))
     try:
