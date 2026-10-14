@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Plus, ArrowRight, Pencil, Trash2 } from "lucide-react";
 import PageHeader from "../components/PageHeader";
 import { Card, Button, TextInput, Alert, EmptyState } from "../components/ui";
@@ -141,6 +141,7 @@ function StatChip({ value, label }) {
 }
 
 export default function Dashboard() {
+  const navigate = useNavigate();
   const { parent } = useAuth();
   const [children, setChildren] = useState([]);
   const [stats, setStats] = useState(null);
@@ -182,13 +183,15 @@ export default function Dashboard() {
     setError("");
     try {
       const child = await createChild(name, year);
-      setChildren((prev) => [...prev, child]);
-      setNewName("");
-      setNewYear("");
-      refreshStats();
+      // Straight into logging, not back to an empty dashboard. Every
+      // outside tester so far added a child and then never logged
+      // anything — nothing told them what to do next. /logs already has
+      // an always-visible "add a log" form and preselects `?child=`, so
+      // this is the shortest real path from "added a child" to "actually
+      // used the app."
+      navigate(`/logs?child=${child.id}`);
     } catch (err) {
       setError(errorMessage(err));
-    } finally {
       setAdding(false);
     }
   };
