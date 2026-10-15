@@ -21,6 +21,14 @@ export const updateChild = (id, patch) =>
   client.patch(`/children/${id}`, patch).then((r) => r.data);
 export const deleteChild = (id) => client.delete(`/children/${id}`);
 
+// Handoff card — a shareable quick-reference, separate from the full profile.
+export const createHandoffLink = (id) =>
+  client.post(`/children/${id}/handoff-link`).then((r) => r.data);
+export const revokeHandoffLink = (id) => client.delete(`/children/${id}/handoff-link`);
+// Public — no auth needed, works even for a signed-out viewer.
+export const getHandoffCard = (token) =>
+  client.get(`/handoff/${token}`).then((r) => r.data);
+
 // Logs
 export const listLogs = (childId) =>
   client.get(`/logs/child/${childId}`).then((r) => r.data);

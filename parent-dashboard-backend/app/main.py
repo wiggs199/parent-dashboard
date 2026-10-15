@@ -7,7 +7,7 @@ from app import auth
 from app.config import CORS_ORIGINS, SENTRY_DSN, SITE_NAME, assert_production_config
 from app.observability import init_sentry
 from app.ratelimit import limiter
-from app.routes import children, documents, exploration_tips, logs
+from app.routes import children, documents, exploration_tips, handoff, logs
 
 # Refuse to start on an unsafe production configuration (dev secret / no DB).
 assert_production_config()
@@ -38,6 +38,7 @@ app.include_router(children.router, prefix="/children", tags=["Children"])
 app.include_router(logs.router, prefix="/logs", tags=["Logs"])
 app.include_router(documents.router, prefix="/documents", tags=["Documents"])
 app.include_router(exploration_tips.router, prefix="/explorationtips", tags=["Exploration Tips"])
+app.include_router(handoff.router, prefix="/handoff", tags=["Handoff"])
 
 
 @app.get("/health", tags=["Health"])

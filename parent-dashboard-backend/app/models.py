@@ -33,6 +33,19 @@ class Child(Base):
     focus_areas = Column(JSON, nullable=False, default=list)  # list[str]
     profile_notes = Column(Text, nullable=True)
 
+    # "Handoff card" — a shareable quick-reference for a sitter, substitute
+    # teacher, or ER visit. Deliberately separate from focus_areas/
+    # profile_notes: a parent fills these in on purpose for this specific
+    # purpose, never inferred or AI-generated (allergies/contacts are
+    # safety-relevant, so this content is always exactly what the parent
+    # typed). handoff_token gates public read access — see routes/handoff.py.
+    handoff_helps = Column(Text, nullable=True)
+    handoff_avoid = Column(Text, nullable=True)
+    handoff_communication = Column(Text, nullable=True)
+    handoff_medical = Column(Text, nullable=True)
+    handoff_contacts = Column(JSON, nullable=False, default=list)  # list[{name, phone}]
+    handoff_token = Column(String, nullable=True, unique=True, index=True)
+
     parent = relationship("Parent", back_populates="children")
     logs = relationship(
         "LogEntry", back_populates="child", cascade="all, delete-orphan"

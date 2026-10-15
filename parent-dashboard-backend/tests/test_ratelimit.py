@@ -92,3 +92,17 @@ def test_ai_extract_is_rate_limited(client, auth_headers, rate_limited):
     ]
     assert codes[:15] == [503] * 15
     assert codes[15:] == [429, 429]
+
+
+def test_handoff_card_is_rate_limited(client, auth_headers, rate_limited):
+    # limit is 30/hour. Public, unauthenticated -- the one endpoint anyone
+    # on the internet can hit without an account, so it gets its own cap.
+    a = auth_headers(email="handoff-rl@example.com")
+    child = client.post(
+        "/children", json={"name": "Kid", "birth_year": 2018}, headers=a
+    ).json()
+    token = client.post(f"/children/{child['id']}/handoff-link", headers=a).json()["token"]
+
+    codes = [client.get(f"/handoff/{token}").status_code for _ in range(32)]
+    assert codes[:30] == [200] * 30
+    assert codes[30:] == [429, 429]

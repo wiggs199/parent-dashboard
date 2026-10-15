@@ -67,6 +67,11 @@ class ChildCreate(ChildBase):
     birth_year: int = Field(ge=1990, le=CURRENT_YEAR)
 
 
+class HandoffContact(BaseModel):
+    name: str = Field(min_length=1, max_length=80)
+    phone: str = Field(min_length=1, max_length=30)
+
+
 class ChildUpdate(BaseModel):
     """Partial update — only the fields sent are changed."""
 
@@ -74,6 +79,15 @@ class ChildUpdate(BaseModel):
     birth_year: Optional[int] = Field(default=None, ge=1990, le=CURRENT_YEAR)
     focus_areas: Optional[List[str]] = Field(default=None, max_length=12)
     profile_notes: Optional[str] = Field(default=None, max_length=4000)
+
+    # Handoff card — all optional, parent fills in only what they want on
+    # the shareable card. Never touched by AI: allergies/contacts are
+    # safety-relevant, so this is always exactly what the parent typed.
+    handoff_helps: Optional[str] = Field(default=None, max_length=2000)
+    handoff_avoid: Optional[str] = Field(default=None, max_length=2000)
+    handoff_communication: Optional[str] = Field(default=None, max_length=2000)
+    handoff_medical: Optional[str] = Field(default=None, max_length=2000)
+    handoff_contacts: Optional[List[HandoffContact]] = Field(default=None, max_length=4)
 
     @field_validator("focus_areas")
     @classmethod
@@ -93,6 +107,37 @@ class ChildRead(ChildBase):
     birth_year: Optional[int] = None
     focus_areas: List[str] = Field(default_factory=list)
     profile_notes: Optional[str] = None
+    handoff_helps: Optional[str] = None
+    handoff_avoid: Optional[str] = None
+    handoff_communication: Optional[str] = None
+    handoff_medical: Optional[str] = None
+    handoff_contacts: List[HandoffContact] = Field(default_factory=list)
+    # The owner needs their own child's token to build the share link —
+    # safe here since ChildRead only ever goes to the authenticated owner.
+    handoff_token: Optional[str] = None
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class HandoffLinkRead(BaseModel):
+    token: str
+
+
+class HandoffRead(BaseModel):
+    """What a public, unauthenticated viewer of a handoff link sees.
+
+    Deliberately narrow — only the fields a parent explicitly filled in for
+    this purpose. Never the full profile, never logs or documents, never
+    the token itself.
+    """
+
+    name: str
+    birth_year: Optional[int] = None
+    handoff_helps: Optional[str] = None
+    handoff_avoid: Optional[str] = None
+    handoff_communication: Optional[str] = None
+    handoff_medical: Optional[str] = None
+    handoff_contacts: List[HandoffContact] = Field(default_factory=list)
 
     model_config = ConfigDict(from_attributes=True)
 

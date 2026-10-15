@@ -1,3 +1,4 @@
+import secrets
 from typing import List
 
 from fastapi import APIRouter, Depends, Response
@@ -66,5 +67,32 @@ def delete_child(
 ):
     child = get_owned_child_or_404(child_id, parent, db)
     db.delete(child)  # cascades to logs, documents, tips
+    db.commit()
+    return Response(status_code=204)
+
+
+@router.post("/{child_id}/handoff-link", response_model=schemas.HandoffLinkRead)
+def create_handoff_link(
+    child_id: int,
+    db: Session = Depends(get_db),
+    parent: models.Parent = Depends(get_current_parent),
+):
+    """(Re)generate the shareable handoff-card link. Calling this again
+    rotates the token, so the old link stops working immediately — the
+    only way to revoke a link that's already been shared."""
+    child = get_owned_child_or_404(child_id, parent, db)
+    child.handoff_token = secrets.token_urlsafe(32)
+    db.commit()
+    return {"token": child.handoff_token}
+
+
+@router.delete("/{child_id}/handoff-link", status_code=204)
+def delete_handoff_link(
+    child_id: int,
+    db: Session = Depends(get_db),
+    parent: models.Parent = Depends(get_current_parent),
+):
+    child = get_owned_child_or_404(child_id, parent, db)
+    child.handoff_token = None
     db.commit()
     return Response(status_code=204)
