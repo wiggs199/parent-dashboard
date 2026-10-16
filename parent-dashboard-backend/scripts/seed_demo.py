@@ -14,6 +14,15 @@ the child/logs/documents) and recreates it clean.
 
 Needs parent-dashboard-backend/.env.prod (gitignored) with DATABASE_URL —
 same as the other admin scripts.
+
+The sample document is uploaded through the real, live API (login, then
+POST /documents) rather than written to storage directly from here. This
+script runs on a local machine with no R2 credentials in its environment,
+so a direct storage.put() call would silently fall back to local disk
+instead of the R2 bucket the live API actually reads from -- the DB row
+would look right while the file itself quietly went nowhere real. Going
+through the API is slower but is the only way from here that's guaranteed
+to land the bytes wherever the live app actually stores them.
 """
 import os
 import sys
@@ -32,7 +41,10 @@ if not os.getenv("DATABASE_URL"):
         "Neon connection string (see this file's docstring)."
     )
 
+import io
 import secrets  # noqa: E402
+
+import httpx  # noqa: E402
 
 from app import models  # noqa: E402
 from app.database import SessionLocal  # noqa: E402
@@ -40,6 +52,9 @@ from app.security import hash_password  # noqa: E402
 
 DEMO_EMAIL = "demo@antaripath.com"
 DEMO_PASSWORD = "TryTheDemo2026"
+DEMO_DOCUMENT_FILENAME = "Chase - IEP Excerpt (Sample).pdf"
+
+API_BASE_URL = os.getenv("API_BASE_URL", "https://parent-dashboard-api.onrender.com")
 
 today = date.today()
 
@@ -65,6 +80,63 @@ LOGS = [
     (days_ago(4), "home_practice", "evening", 4, "Practiced new words from speech homework."),
     (days_ago(1), "observation", None, 4, "Clearer speech noticed by grandma on a video call."),
 ]
+
+
+def _make_sample_iep_pdf() -> bytes:
+    """A one-page fake IEP excerpt -- plausible enough that the AI
+    extraction feature has real goals/dates/services to find, clearly
+    labeled as a sample so nobody mistakes it for a real document."""
+    from reportlab.lib.pagesizes import LETTER
+    from reportlab.lib.styles import ParagraphStyle
+    from reportlab.lib.units import inch
+    from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer
+
+    buf = io.BytesIO()
+    doc = SimpleDocTemplate(
+        buf, pagesize=LETTER,
+        leftMargin=0.9 * inch, rightMargin=0.9 * inch,
+        topMargin=0.9 * inch, bottomMargin=0.9 * inch,
+    )
+    h1 = ParagraphStyle("h1", fontName="Helvetica-Bold", fontSize=14, spaceAfter=4)
+    label = ParagraphStyle("label", fontName="Helvetica-Bold", fontSize=10, spaceBefore=12, spaceAfter=4)
+    body = ParagraphStyle("body", fontName="Helvetica", fontSize=10, leading=14, spaceAfter=4)
+    sample = ParagraphStyle("sample", fontName="Helvetica-Oblique", fontSize=9, textColor="#a33", spaceAfter=10)
+
+    review_date = (today.replace(year=today.year + 1)).strftime("%B %-d, %Y")
+
+    flow = [
+        Paragraph("Individualized Education Program (IEP) &mdash; Excerpt", h1),
+        Paragraph("SAMPLE DOCUMENT &mdash; fictional, for demo purposes only. Not a real record.", sample),
+        Paragraph("Student", label),
+        Paragraph("Chase (Demo)", body),
+        Paragraph("Annual Review Date", label),
+        Paragraph(review_date, body),
+        Paragraph("Present Levels of Performance", label),
+        Paragraph(
+            "Chase is working on increasing intelligible speech in conversational "
+            "settings and expanding expressive vocabulary.", body,
+        ),
+        Paragraph("Annual Goals", label),
+        Paragraph(
+            "1. By the next annual review, Chase will produce age-appropriate "
+            "speech sounds in conversation with 80% accuracy, as measured by "
+            "SLP observation.", body,
+        ),
+        Paragraph(
+            "2. Chase will use 4&ndash;5 word sentences to communicate wants and "
+            "needs in the classroom setting, in 8 of 10 observed opportunities.", body,
+        ),
+        Paragraph("Services", label),
+        Paragraph(
+            "Speech-Language Therapy &mdash; 60 minutes/week, individual session, "
+            "provided by the school's Speech-Language Pathologist.", body,
+        ),
+        Paragraph("Classroom accommodation: visual schedule support.", body),
+        Paragraph("Case Manager", label),
+        Paragraph("Ms. Rivera, Special Education Coordinator", body),
+    ]
+    doc.build(flow)
+    return buf.getvalue()
 
 
 def main():
@@ -124,9 +196,32 @@ def main():
                 )
             )
 
+        child_id = child.id
+        handoff_token = child.handoff_token
         db.commit()
         print(f"Demo account ready: {DEMO_EMAIL} / {DEMO_PASSWORD}")
-        print(f"Handoff card: /h/{child.handoff_token}")
+        print(f"Handoff card: /h/{handoff_token}")
+
+        # Upload the sample document through the real API (see module
+        # docstring for why -- a direct storage.put() from here would miss
+        # the live R2 bucket entirely).
+        pdf_bytes = _make_sample_iep_pdf()
+        with httpx.Client(base_url=API_BASE_URL, timeout=30) as http:
+            login = http.post(
+                "/auth/login", data={"username": DEMO_EMAIL, "password": DEMO_PASSWORD}
+            )
+            login.raise_for_status()
+            token = login.json()["access_token"]
+            headers = {"Authorization": f"Bearer {token}"}
+
+            upload = http.post(
+                "/documents",
+                data={"child_id": str(child_id), "category": "school"},
+                files={"file": (DEMO_DOCUMENT_FILENAME, io.BytesIO(pdf_bytes), "application/pdf")},
+                headers=headers,
+            )
+            upload.raise_for_status()
+            print(f"Sample document uploaded via the live API: {DEMO_DOCUMENT_FILENAME}")
     finally:
         db.close()
 

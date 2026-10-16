@@ -1,2 +1,5 @@
 -r requirements.txt
 pytest==8.4.2
+# Only used by scripts/seed_demo.py to generate the sample IEP document --
+# never imported by the app itself, not a production dependency.
+reportlab==4.2.5
