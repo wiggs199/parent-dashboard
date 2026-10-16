@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useSearchParams } from "react-router-dom";
-import { FolderClosed, Download, Trash2, Upload, Pencil, Sparkles, X } from "lucide-react";
+import { useSearchParams, Link } from "react-router-dom";
+import { FolderClosed, Download, Trash2, Upload, Pencil, Sparkles, X, Lock } from "lucide-react";
 import PageHeader from "../components/PageHeader";
 import { Card, Button, Select, TextInput, Alert, EmptyState, Field } from "../components/ui";
 import FilePreview from "../components/FilePreview";
@@ -351,9 +351,16 @@ export default function Documents() {
       ) : (
         <>
           <Card elevated className="mb-8 p-5">
-            <h2 className="mb-4 font-display text-lg font-semibold text-ink">
+            <h2 className="font-display text-lg font-semibold text-ink">
               Upload{activeChild ? ` · ${activeChild.name}` : ""}
             </h2>
+            <p className="mb-4 mt-1 flex items-center gap-1.5 text-xs text-ink-faint">
+              <Lock size={12} className="shrink-0" />
+              Encrypted, scoped to your account only, and never shared.{" "}
+              <Link to="/privacy" className="underline hover:text-ink-soft">
+                How this works
+              </Link>
+            </p>
 
             <input
               ref={fileRef}
