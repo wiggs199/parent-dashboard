@@ -111,16 +111,18 @@ export default function Landing() {
         <div className="mx-auto max-w-xl px-5 py-12 sm:px-8">
           <p className="text-base font-medium text-ink">{SITE.name} began with my son, Chase.</p>
           <p className="mt-3 text-sm leading-relaxed text-ink-soft">
-            When he experienced a speech delay, I found myself trying to keep track of
-            everything — home exercises, therapy appointments, school forms, insurance
-            paperwork — scattered across a Notes app, a folder on the counter, and emails I
-            could never find again. Whenever I needed to share his history with a school, a new
-            therapist, or insurance, I was piecing it all back together from memory.
+            When he experienced a speech delay, I quickly realized how hard it was to keep
+            everything organized — home exercises in my Notes app, appointments to track,
+            school forms in a folder on the counter, insurance paperwork buried in emails.
+            Whenever I needed to share his history with his school, a new therapist, or
+            insurance, I found myself piecing it all together from memory.
           </p>
           <p className="mt-3 text-sm leading-relaxed text-ink-soft">
-            So I built the tool I wished existed. It&rsquo;s not just for speech delays —
-            appointments, OT or PT, learning support, a chronic condition, regular doctor
-            visits — it doesn&rsquo;t assume why you&rsquo;re tracking.
+            I wanted one place to keep it all organized and turn it into a clear summary
+            whenever someone needed one — so I built the tool I wished I&rsquo;d had. It&rsquo;s
+            not just for speech delays — appointments, OT or PT, learning support, behavioral
+            or social goals, a chronic condition, regular doctor visits — it doesn&rsquo;t
+            assume why you&rsquo;re tracking.
           </p>
         </div>
       </section>
