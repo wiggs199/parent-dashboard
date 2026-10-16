@@ -25,7 +25,7 @@ const FEATURES = [
   {
     Icon: FolderClosed,
     title: "Keep the documents",
-    body: "Upload an IEP or insurance letter and have the key dates and details pulled out for you.",
+    body: "Upload an IEP or insurance letter and have the key dates pulled out for you — encrypted and visible only to you.",
   },
   {
     Icon: Sparkles,
